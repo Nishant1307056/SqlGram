@@ -9,7 +9,7 @@ const challenges = [
  {name:"8. Use a CTE",level:"Advanced",prompt:"Use a CTE to calculate total spend per customer, then return totals above 200.",starter:"WITH spend AS (\n  SELECT customer_id, SUM(total) AS total_spent\n  FROM orders\n  GROUP BY customer_id\n)\nSELECT * FROM spend WHERE total_spent > 200;",check:/with\s+\w+\s+as\s*\(/i}
 ];
 const $ = id => document.getElementById(id);
-let db=null, active=0, runs=0;
+let db=null, active=0, runs=0, pendingOpen=false;
 function escapeHtml(v){return String(v??"NULL").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function setupDb(){
  db=new window.SQL.Database();
@@ -28,7 +28,7 @@ function saveQuery(){
  const items=JSON.parse(localStorage.getItem(key)||"[]");items.unshift({name,sql:$("sqlEditor").value});localStorage.setItem(key,JSON.stringify(items.slice(0,30)));renderSaved();
 }
 function renderSaved(){const key="sqlgram-queries-"+(localStorage.getItem("uid")||"guest");const items=JSON.parse(localStorage.getItem(key)||"[]");$("sqlSaved").innerHTML=items.length?items.map((x,i)=>"<button class='sqlAction' data-query='"+i+"'>"+escapeHtml(x.name)+"</button>").join(""):"<span class='sqlIntro'>Your saved queries will appear here.</span>";}
-function openLab(){ $("sqlLab").hidden=false;closeDrawerSafe(); }
+function openLab(){ const panel=$("sqlLab"); if(panel) panel.hidden=false; pendingOpen=true; closeDrawerSafe(); }
 function closeDrawerSafe(){const d=$("drawer"),s=$("drawerShade"),m=$("menuBtn");if(d){d.classList.remove("open");d.setAttribute("aria-hidden","true");}if(s)s.hidden=true;if(m)m.setAttribute("aria-expanded","false");}
 function init(){
  const panel=document.createElement("section");panel.id="sqlLab";panel.hidden=true;panel.innerHTML=`
@@ -42,6 +42,7 @@ function init(){
   <div class="sqlPanel sqlWide"><h3>My saved queries</h3><div class="sqlSaved" id="sqlSaved"></div></div>
  </div>`;
  document.body.append(panel);
+ if(pendingOpen) panel.hidden=false;
  const select=$("sqlChallengeSelect");challenges.forEach((c,i)=>{const o=document.createElement("option");o.value=i;o.textContent=c.name+" ("+c.level+")";select.append(o);});
  $("sqlClose").onclick=()=>panel.hidden=true;
  $("sqlRun").onclick=()=>{try{const q=$("sqlEditor").value.trim();if(!q)throw Error("Write a SQL query first.");const out=db.exec(q);runs++;renderResults(out);$("sqlStatus").textContent="Executed successfully · "+runs+" queries run this session.";const c=challenges[active];if(c.check.test(q)){$("sqlStatus").textContent+=" Challenge pattern detected — compare your result with the prompt.";const k="sqlgram-practice-"+(localStorage.getItem("uid")||"guest");const done=new Set(JSON.parse(localStorage.getItem(k)||"[]"));done.add(active);localStorage.setItem(k,JSON.stringify([...done]));$("sqlStats").textContent=done.size+" of "+challenges.length+" challenge patterns attempted · SQLite";}}catch(e){$("sqlStatus").textContent="SQL error: "+e.message;$("sqlResults").innerHTML="";}};
@@ -58,5 +59,13 @@ function loadEngine(){
  if(window.initSqlJs){window.initSqlJs({locateFile:file=>"https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/"+file}).then(SQL=>{window.SQL=SQL;init();}).catch(e=>{console.error(e);fallback();});return;}
  const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js";s.onload=()=>window.initSqlJs({locateFile:file=>"https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/"+file}).then(SQL=>{window.SQL=SQL;init();}).catch(fallback);s.onerror=fallback;document.head.append(s);
 }
-function fallback(){const panel=document.createElement("section");panel.id="sqlLab";panel.innerHTML="<div class='sqlTop'><h2>SQL Practice Lab</h2><button onclick='this.closest("section").hidden=true'>Close ✕</button></div><p>Could not load the free SQLite engine. Check your internet connection and reopen the lab.</p>";document.body.append(panel);window.__openSqlLab=()=>panel.hidden=false;}
+function fallback(){
+ const panel=document.createElement("section");
+ panel.id="sqlLab";
+ panel.hidden=!pendingOpen;
+ panel.innerHTML='<div class="sqlTop"><h2>SQL Practice Lab</h2><button id="sqlFallbackClose">Close ✕</button></div><p>Could not load the free SQLite engine. Check your internet connection and reopen the lab.</p>';
+ document.body.append(panel);
+ panel.querySelector("#sqlFallbackClose").addEventListener("click",()=>panel.hidden=true);
+}
+window.__openSqlLab=openLab;
 loadEngine();
