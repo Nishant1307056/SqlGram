@@ -751,6 +751,26 @@ let creatingAccount = false;
 let syncQueue = Promise.resolve();
 
 function showError(message) { $("err").textContent = message || ""; }
+let sqlGramAuthReadyResolve;
+const sqlGramAuthReady = new Promise(resolve => { sqlGramAuthReadyResolve = resolve; });
+window.__sqlGramPracticeHistory = {
+  ready: () => auth.currentUser ? Promise.resolve(auth.currentUser) : sqlGramAuthReady,
+  load: async () => {
+    const user = await (auth.currentUser ? Promise.resolve(auth.currentUser) : sqlGramAuthReady);
+    if (!user) return {};
+    const snap = await getDoc(doc(db, "users", user.uid, "sqlPractice", "history"));
+    return snap.exists() && snap.data().seenByLevel ? snap.data().seenByLevel : {};
+  },
+  save: async seenByLevel => {
+    const user = await (auth.currentUser ? Promise.resolve(auth.currentUser) : sqlGramAuthReady);
+    if (!user) return false;
+    await setDoc(doc(db, "users", user.uid, "sqlPractice", "history"), {
+      seenByLevel,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+    return true;
+  }
+};
 function refreshProfile() {
   const user=auth.currentUser;
   if(!user)return;
@@ -767,7 +787,7 @@ function refreshProfile() {
 function closeDrawer(){$("drawer").classList.remove("open");$("drawer").setAttribute("aria-hidden","true");$("drawerShade").hidden=true;$("menuBtn").setAttribute("aria-expanded","false");}
 $("menuBtn").addEventListener("click",()=>{refreshProfile();$("drawer").classList.add("open");$("drawer").setAttribute("aria-hidden","false");$("drawerShade").hidden=false;$("menuBtn").setAttribute("aria-expanded","true");});
 $("closeDrawer").addEventListener("click",closeDrawer);$("drawerShade").addEventListener("click",closeDrawer);
-document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",()=>{const a=b.dataset.menu;closeDrawer();if(a==="profile"){refreshProfile();$("profilePanel").hidden=false;}else if(a==="settings"){$("settingsPanel").hidden=false;}else if(a==="developer"){$("developerPanel").hidden=false;}else if(a==="practice"){if(window.__openSqlLab){window.__openSqlLab();}else{import("./sql-lab.js?v=16").then(()=>window.__openSqlLab?.()).catch(e=>{console.error("SQL Lab load failed",e);alert("SQL Practice Lab could not load. Please check your internet connection and try again.");});}}else window.__setSqlGramFilter(a);}));
+document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",()=>{const a=b.dataset.menu;closeDrawer();if(a==="profile"){refreshProfile();$("profilePanel").hidden=false;}else if(a==="settings"){$("settingsPanel").hidden=false;}else if(a==="developer"){$("developerPanel").hidden=false;}else if(a==="practice"){if(window.__openSqlLab){window.__openSqlLab();}else{import("./sql-lab.js?v=17").then(()=>window.__openSqlLab?.()).catch(e=>{console.error("SQL Lab load failed",e);alert("SQL Practice Lab could not load. Please check your internet connection and try again.");});}}else window.__setSqlGramFilter(a);}));
 $("closeSettings").addEventListener("click",()=>$("settingsPanel").hidden=true);
 $("closeDeveloper").addEventListener("click",()=>$("developerPanel").hidden=true);
 const savedTheme=localStorage.getItem("sqlgram-theme")||"system";$("themeChoice").value=savedTheme;
@@ -843,6 +863,7 @@ window.__syncSqlGram = () => {
 };
 
 onAuthStateChanged(auth, async user => {
+  sqlGramAuthReadyResolve(user);
   if (!user) {
     localStorage.removeItem("uid");
     $("auth").hidden = false;
@@ -887,5 +908,5 @@ onAuthStateChanged(auth, async user => {
 });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js?v=5", {updateViaCache:"none"}).then(r=>r.update()).catch(() => {});
 </script>
-<script type="module" src="sql-lab.js?v=16"></script>
+<script type="module" src="sql-lab.js?v=17"></script>
 </body></html>
