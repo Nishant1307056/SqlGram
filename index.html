@@ -150,7 +150,7 @@ header{gap:8px}header h1{flex:1;padding-left:12px}
  <label for="themeChoice">Appearance</label><select id="themeChoice"><option value="system">Use device setting</option><option value="light">Light</option><option value="dark">Dark</option></select>
  <p class="profileEmail">Choose how SqlGram looks on this device.</p>
 </div></section>
-<div id="auth"><div class="ab">
+<div id="auth" hidden><div class="ab">
 <h1>SqlGram</h1><p>Sign in to access lessons and sync your learning across devices.</p>
 <button class="gbtn" id="g">Continue with Google</button>
 <div class="or">or use email</div>
@@ -764,8 +764,15 @@ const store=()=>{try{localStorage.setItem("l"+K,JSON.stringify([...liked]));loca
 const ic={h:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.600-7 10-7 10z"/></svg>',b:'<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>',c:'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>'};
 const feed=document.getElementById("feed"),count=document.getElementById("count");
 function table(r,l){if(!r)return"";if(r.includes("#"))return r.split("#").map(x=>table(x,l)).join("");if(r.includes("~"))[l,r]=r.split("~");const rows=r.split(";").map(x=>x.split("|"));return`<div class=res><small>${l||"Result"}</small><table><tr>${rows[0].map(h=>`<th>${h}</th>`).join("")}</tr>${rows.slice(1).map(x=>`<tr>${x.map(v=>`<td>${v}</td>`).join("")}</tr>`).join("")}</table></div>`}
+function difficultyRank(value){
+ const level=String(value||"").toLowerCase();
+ if(/beginner|easy|start here/.test(level))return 0;
+ if(/intermediate|medium/.test(level))return 1;
+ if(/advanced|hard/.test(level))return 2;
+ return 3;
+}
 function render(){
- const list=P.map((p,i)=>({p,i})).filter(({p,i})=>filter==="All"||(filter==="Saved"?saved.has(i):filter==="Liked"?liked.has(i):filter==="Completed"?completed.has(i):p[0]===filter)).sort((a,b)=>Object.keys(COL).indexOf(a.p[0])-Object.keys(COL).indexOf(b.p[0])||rk(a.p[2])-rk(b.p[2]));
+ const list=P.map((p,i)=>({p,i})).filter(({p,i})=>filter==="All"||(filter==="Saved"?saved.has(i):filter==="Liked"?liked.has(i):filter==="Completed"?completed.has(i):p[0]===filter)).sort((a,b)=>Object.keys(COL).indexOf(a.p[0])-Object.keys(COL).indexOf(b.p[0])||difficultyRank(a.p[1])-difficultyRank(b.p[1])||rk(a.p[2])-rk(b.p[2]));
  feed.innerHTML=list.length?list.map(({p,i},n)=>`<section class=post data-i="${i}"><article class=card style="--c:${COL[p[0]]}">
  <div class=who><div class=av>${p[0].slice(0,2).trim()}</div><div><b>${p[0]}</b><span>${p[1]}</span></div></div>
  <h2>${p[2]}</h2><p class=tag>${p[3]}</p>
@@ -968,7 +975,7 @@ onAuthStateChanged(auth, async user => {
     console.error(e);
   }
 });
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js?v=6", {updateViaCache:"none"}).then(r=>r.update()).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js?v=7", {updateViaCache:"none"}).then(r=>r.update()).catch(() => {});
 </script>
 <script src="curriculum.js?v=2" defer></script>
 <script src="curriculum-lessons.js?v=1" defer></script>
