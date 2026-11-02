@@ -220,11 +220,11 @@ FROM customers;`,"name|band;Asha|mid;Ben|junior;Chen|senior","CASE checks condit
   FROM orders GROUP BY customer_id
 )
 SELECT * FROM big WHERE spent > 200;`,"customer_id|spent;1|250","A CTE is a named temporary result you define once and query like a table. It turns deeply nested subqueries into steps you can read in order."],
-["Advanced","Advanced","Window functions","Rank rows without collapsing them",`SELECT name, city, age,
+["Advanced","Advanced","Ranking with window functions","Rank rows within each group",`SELECT name, city, age,
   RANK() OVER (
     PARTITION BY city ORDER BY age DESC
-  ) AS rk
-FROM customers;`,"name|city|age|rk;Asha|Kolkata|34|1;Chen|Leeds|41|1;Ben|Leeds|28|2","Unlike GROUP BY, a window function keeps every row. PARTITION BY restarts the ranking per city, and ORDER BY decides who is first."],
+  ) AS city_rank
+FROM customers;`,"name|city|age|city_rank;Asha|Kolkata|34|1;Chen|Leeds|41|1;Ben|Leeds|28|2","RANK assigns the same rank to tied values and leaves gaps after ties. PARTITION BY starts the ranking again for each city; ORDER BY determines the ranking sequence. Unlike GROUP BY, every customer row remains in the result."],
 ["Basics","Beginner","CREATE TABLE","Define the shape of your data",`CREATE TABLE customers (
   id INT PRIMARY KEY,
   name VARCHAR(50) NOT NULL,
@@ -447,12 +447,12 @@ AFTER UPDATE ON users
 FOR EACH ROW
 INSERT INTO audit (user_id, changed_at)
 VALUES (NEW.id, NOW());`,"","A trigger fires on INSERT, UPDATE or DELETE. It suits audit trails and derived values, but it is invisible to anyone reading application code, so use it sparingly."],
-["Engineering","Intermediate","Transactions and ACID","All or nothing",`BEGIN;
+["Engineering","Intermediate","Transaction basics: COMMIT and ROLLBACK","Group related changes into one unit",`BEGIN;
 UPDATE accounts SET balance = balance - 100
 WHERE id = 1;
 UPDATE accounts SET balance = balance + 100
 WHERE id = 2;
-COMMIT;`,"","A transaction groups statements so they succeed together or not at all; ROLLBACK undoes them. ACID: Atomicity (all or nothing), Consistency (rules always hold), Isolation (transactions don’t see each other’s half-done work), Durability (committed data survives a crash)."],
+COMMIT;`,"","BEGIN starts a transaction, COMMIT makes its changes permanent, and ROLLBACK cancels uncommitted changes. Keep related statements in one transaction so a partial operation does not leave the database in an inconsistent state. Exact command syntax varies by database."],
 ["Engineering","Advanced","Isolation levels and locks","Concurrent users",`SET TRANSACTION ISOLATION LEVEL
   REPEATABLE READ;`,"","Read Uncommitted allows dirty reads, Read Committed blocks them, Repeatable Read keeps a row stable within your transaction, and Serializable behaves as if users ran one at a time. Higher levels are safer but slower. Locks make writers wait; a deadlock is two transactions waiting on each other, so the database cancels one and you retry."],
 ["Engineering","Intermediate","Normalization","Store each fact once",`-- 1NF  one value per cell, no repeating groups
@@ -730,9 +730,20 @@ WHERE rn = 1;`,"","Keep one row per business key with ROW_NUMBER. Add checks for
 ["SQL foundations","Intermediate","NULL is not zero","Unknown values need special handling","SELECT employee_id\nFROM employees\nWHERE commission_pct IS NULL;","","NULL represents missing or unknown information, not zero or an empty string. Comparisons with NULL generally produce UNKNOWN, not TRUE or FALSE. Use IS NULL and IS NOT NULL; understand three-valued logic when combining conditions."],
 ["SQL foundations","Intermediate","JOIN: combine related tables","The relational model in action","SELECT e.first_name, d.department_name\nFROM employees e\nJOIN departments d\n  ON d.department_id = e.department_id;","","A join combines rows from two sources according to a matching condition. An INNER JOIN returns matching pairs. A LEFT JOIN preserves every left-side row and fills missing right-side values with NULL. Join keys should reflect the relationship."],
 ["SQL foundations","Intermediate","GROUP BY and HAVING","Summarise data by category","SELECT department_id, COUNT(*) AS headcount\nFROM employees\nGROUP BY department_id\nHAVING COUNT(*) >= 5;","","GROUP BY forms groups based on matching values. Aggregate functions calculate a result per group. WHERE filters individual rows before grouping; HAVING filters groups after aggregation. This difference is central to analytical SQL."],
-["SQL foundations","Advanced","Window functions","Calculate across rows without collapsing them","SELECT employee_id, department_id, salary,\n       DENSE_RANK() OVER (\n         PARTITION BY department_id\n         ORDER BY salary DESC\n       ) AS salary_rank\nFROM employees;","","Window functions calculate across a related set of rows while keeping each input row in the result. PARTITION BY defines groups; ORDER BY defines sequence; a frame can limit which neighbouring rows contribute. Use them for ranking, running totals and comparisons."],
+["SQL foundations","Advanced","Window frames and running totals","Choose which neighbouring rows contribute",`SELECT employee_id, department_id, salary,
+       SUM(salary) OVER (
+         PARTITION BY department_id
+         ORDER BY employee_id
+         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+       ) AS running_total
+FROM employees;`,"","A window frame defines the rows included for the current result row. This example starts at the first row in each department and accumulates through the current employee. ROWS counts physical rows; RANGE groups peers with equal ordering values. Add a deterministic ORDER BY key when row-by-row results matter."],
 ["SQL foundations","Advanced","CTEs make complex SQL readable","Build a query in named steps","WITH department_pay AS (\n  SELECT department_id, AVG(salary) AS avg_pay\n  FROM employees\n  GROUP BY department_id\n)\nSELECT *\nFROM department_pay\nWHERE avg_pay > 60000;","","A Common Table Expression (CTE) gives a subquery a name within one statement. It helps break complex logic into readable stages. Recursive CTEs can traverse hierarchies. A CTE is not automatically materialized; behavior depends on the optimizer and DBMS."],
-["DBMS","Advanced","Transactions and ACID","Keep related changes reliable","BEGIN;\nUPDATE accounts SET balance = balance - 100\nWHERE account_id = 1;\nUPDATE accounts SET balance = balance + 100\nWHERE account_id = 2;\nCOMMIT;","","A transaction groups operations into one logical unit. ACID means Atomicity, Consistency, Isolation and Durability. If one transfer step fails, the transaction should roll back rather than leave money removed from one account but not added to the other."],
+["DBMS","Advanced","ACID properties","The four guarantees of reliable transactions",`BEGIN;
+UPDATE accounts SET balance = balance - 100
+WHERE account_id = 1;
+UPDATE accounts SET balance = balance + 100
+WHERE account_id = 2;
+COMMIT;`,"","Atomicity means all transaction steps succeed or none do. Consistency means committed work preserves database rules. Isolation controls how concurrent transactions interact. Durability means committed changes survive failures. These guarantees work together; their exact implementation depends on the database and isolation configuration."],
 ["DBMS","Advanced","Indexes and query performance","Trade storage and write cost for faster reads","CREATE INDEX idx_employee_dept\nON employees(department_id);\n\nEXPLAIN\nSELECT * FROM employees\nWHERE department_id = 10;","","An index is an auxiliary data structure that helps locate rows without scanning the entire table. B-tree indexes commonly support equality and range predicates. Indexes consume storage and add write overhead, so create them for real access patterns and validate with execution plans."],
 ["DBMS","Advanced","Concurrency, locks and isolation","Many users, one consistent database","Transaction A reads stock = 5\nTransaction B reads stock = 5\nBoth try to sell 4 units.\n\nConcurrency control prevents\nboth from blindly overwriting each other.","","Concurrency control coordinates simultaneous transactions. Locks, multiversion concurrency control (MVCC), isolation levels and conflict detection help prevent anomalies such as lost updates, dirty reads and inconsistent reads. Exact behavior differs by DBMS."],
 ["DBMS","Advanced","Backup, recovery and durability","Plan for failure before it happens","Full backup + incremental backups\nTransaction log / WAL\nRestore test\nRecovery time objective (RTO)\nRecovery point objective (RPO)","","Backups protect against loss, while transaction logs help recover to a point in time. RTO is how quickly service must return; RPO is how much data loss is tolerable. A backup strategy is incomplete until restore procedures are tested."],
