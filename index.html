@@ -163,8 +163,7 @@ header{gap:8px}header h1{flex:1;padding-left:12px}
 </div></div>
 <script>
 const M=["Data","DBMS","Relational model","Database design","Normalization","SQL foundations","Foundations","Basics","Filtering","Aggregation","Joins","Advanced","Engineering","Practice"];const COL={};M.forEach((m,i)=>COL[m]=`hsl(${i*22+200},62%,46%)`);COL.Practice="#2a9d3f";
-const P=[
-["Basics","Beginner","SELECT","Pick the columns you need",`SELECT name, city
+const P=[["Basics","Beginner","SELECT","Pick the columns you need",`SELECT name, city
 FROM customers;`,"name|city;Asha|Kolkata;Ben|Leeds;Chen|Leeds","SELECT lists the columns you want back. FROM says which table to read. Naming columns instead of using * keeps results small and your intent clear."],
 ["Basics","Beginner","DISTINCT","Remove duplicate rows",`SELECT DISTINCT city
 FROM customers;`,"city;Kolkata;Leeds","DISTINCT keeps one copy of every unique result. Three customers lived in two cities, so you get two rows."],
@@ -358,31 +357,31 @@ FROM (
 ) t
 GROUP BY rn
 ORDER BY rn;`,"occupations~name|occupation;Ann|Doctor;Raj|Doctor;Eli|Professor;Zoe|Professor","Conditional aggregation is how you pivot in SQL. Number the names inside each occupation, group by that number, and let MAX(CASE ...) pick the name for each column.",1],
-["Foundations","Start here","What is SQL?","The language for talking to databases",`SELECT 'Hello, SQL' AS greeting;`,"greeting;Hello, SQL","SQL (Structured Query Language, said S-Q-L or “sequel”) is the standard language for storing, finding, changing and combining data in a relational database. You describe the result you want and the database works out how to get it. MySQL, PostgreSQL, SQL Server, Oracle, Snowflake and BigQuery all speak SQL, with small dialect differences."],
-["Foundations","Start here","Why do we use SQL?","The problem it solves","","","Spreadsheets slow down and break when data gets big or many people edit at once. A database stores millions of rows, answers in milliseconds, lets many users read and write safely together, and enforces rules so bad data can’t get in. SQL is the common language for all of it, so analysts, engineers, data scientists and app developers all use it."],
-["Foundations","Start here","Tables, rows and columns","How data is laid out",`-- A database holds many tables.
+["Foundations","Beginner","What is SQL?","The language for talking to databases",`SELECT 'Hello, SQL' AS greeting;`,"greeting;Hello, SQL","SQL (Structured Query Language, said S-Q-L or “sequel”) is the standard language for storing, finding, changing and combining data in a relational database. You describe the result you want and the database works out how to get it. MySQL, PostgreSQL, SQL Server, Oracle, Snowflake and BigQuery all speak SQL, with small dialect differences."],
+["Foundations","Beginner","Why do we use SQL?","The problem it solves","","","Spreadsheets slow down and break when data gets big or many people edit at once. A database stores millions of rows, answers in milliseconds, lets many users read and write safely together, and enforces rules so bad data can’t get in. SQL is the common language for all of it, so analysts, engineers, data scientists and app developers all use it."],
+["Foundations","Beginner","Tables, rows and columns","How data is laid out",`-- A database holds many tables.
 -- Each table is one kind of thing:
 -- customers, orders, products...`,"customers~id|name|city;1|Asha|Kolkata;2|Ben|Leeds","A table is a grid. Each column is one attribute with a fixed type (id, name, city). Each row is one record, here one customer. A cell is where a row meets a column. A database is a collection of related tables."],
-["Foundations","Start here","Data types","Every column has a type",`-- INT, BIGINT        whole numbers
+["Foundations","Beginner","Data types","Every column has a type",`-- INT, BIGINT        whole numbers
 -- DECIMAL(10,2)      exact values, e.g. money
 -- FLOAT              approximate decimals
 -- VARCHAR(n), TEXT   text
 -- DATE, TIMESTAMP    dates and times
 -- BOOLEAN            true or false
 -- JSON               nested data`,"","The type decides what a column can store and what you can do with it. Use DECIMAL for money, never FLOAT, because FLOAT rounds. Type names vary slightly between databases."],
-["Foundations","Start here","Primary and foreign keys","How tables connect",`CREATE TABLE orders (
+["Foundations","Beginner","Primary and foreign keys","How tables connect",`CREATE TABLE orders (
   id INT PRIMARY KEY,
   customer_id INT,
   total DECIMAL(10,2),
   FOREIGN KEY (customer_id)
     REFERENCES customers (id)
 );`,"","A primary key uniquely identifies each row. A foreign key stores another table’s primary key, linking the two: each order points to one customer, and a customer can have many orders (one-to-many). Many-to-many links, like students and courses, use a third junction table holding both keys."],
-["Foundations","Start here","The five families of SQL","What each command is for",`-- DQL  query data       SELECT
+["Foundations","Beginner","The five families of SQL","What each command is for",`-- DQL  query data       SELECT
 -- DML  change data      INSERT, UPDATE, DELETE, MERGE
 -- DDL  define structure  CREATE, ALTER, DROP, TRUNCATE
 -- DCL  control access    GRANT, REVOKE
 -- TCL  control changes   BEGIN, COMMIT, ROLLBACK`,"","Commands group by purpose. Most of this app covers DQL (reading) first, then DML and DDL, and finally the engineering topics around access, transactions and performance."],
-["Foundations","Start here","How a query is read","Written order is not run order",`SELECT city, COUNT(*) AS n   -- 5
+["Foundations","Beginner","How a query is read","Written order is not run order",`SELECT city, COUNT(*) AS n   -- 5
 FROM customers               -- 1
 WHERE age > 18               -- 2
 GROUP BY city                -- 3
@@ -494,52 +493,52 @@ HAVING COUNT(DISTINCT product_key) = (
   ROUND(100.0 * (amount - LAG(amount) OVER (ORDER BY year))
     / LAG(amount) OVER (ORDER BY year), 1) AS growth_pct
 FROM revenue;`,"revenue~year|amount;2022|100;2023|150;2024|120","LAG brings the previous year onto the same row, so growth is plain arithmetic. 2022 has no previous year, so it stays NULL; 2023 is 50.0 and 2024 is -20.0.",1],
-[1,"Start here","Course map","16 modules in 4 stages",`-- Stage 1 Foundation: 1 Intro, 2 Queries, 3 Functions, 4 Aggregates
+["Foundations","Beginner","Course map","16 modules in 4 stages",`-- Stage 1 Foundation: 1 Intro, 2 Queries, 3 Functions, 4 Aggregates
 -- Stage 2 Query building: 5 Joins, 6 Subqueries and CTEs, 7 Set ops, 8 Windows
 -- Stage 3 Database management: 9 DML, 10 DDL, 11 Keys, 12 Design, 13 Transactions, 14 Objects
 -- Stage 4 Industry readiness: 15 Performance, 16 Data engineering`,"","Follow the chips left to right; each module builds on the one before. Practice problems sit at the very end so you meet them with every tool in hand."],
-[1,"Start here","Data, DBMS and RDBMS","Four terms, one ladder","","","Data is raw facts (names, amounts, dates). A database is an organised collection of data. A DBMS is software that stores and manages it, handling access, safety and many users. An RDBMS is a DBMS that keeps data in related tables and speaks SQL. The difference: a plain DBMS may store files or hierarchies with no enforced relationships, while an RDBMS enforces keys and constraints."],
-[1,"Start here","SQL vs MySQL vs SQL Server","Language versus product","","","SQL is the language. MySQL, PostgreSQL, SQL Server and Oracle are products (RDBMS) that implement it, each adding extras: T-SQL for SQL Server, PL/SQL for Oracle, PL/pgSQL for PostgreSQL. Core SELECT, JOIN and GROUP BY work almost everywhere."],
-[1,"Start here","Databases and schemas","Folders for your tables",`CREATE SCHEMA sales;
+["Data","Beginner","Data, DBMS and RDBMS","Four terms, one ladder","","","Data is raw facts (names, amounts, dates). A database is an organised collection of data. A DBMS is software that stores and manages it, handling access, safety and many users. An RDBMS is a DBMS that keeps data in related tables and speaks SQL. The difference: a plain DBMS may store files or hierarchies with no enforced relationships, while an RDBMS enforces keys and constraints."],
+["SQL foundations","Beginner","SQL vs MySQL vs SQL Server","Language versus product","","","SQL is the language. MySQL, PostgreSQL, SQL Server and Oracle are products (RDBMS) that implement it, each adding extras: T-SQL for SQL Server, PL/SQL for Oracle, PL/pgSQL for PostgreSQL. Core SELECT, JOIN and GROUP BY work almost everywhere."],
+["DBMS","Beginner","Databases and schemas","Folders for your tables",`CREATE SCHEMA sales;
 
 CREATE TABLE sales.orders (
   id INT PRIMARY KEY,
   total DECIMAL(10,2)
 );`,"","A server holds databases, a database holds schemas, and a schema holds tables, views and other objects. Schemas group related objects (sales, hr) and control access. You refer to a table as schema.table."],
-[1,"Start here","Relationships and ER diagrams","How tables relate",`-- One-to-one     user -> profile
+["Database design","Beginner","Relationships and ER diagrams","How tables relate",`-- One-to-one     user -> profile
 -- One-to-many    customer -> orders
 -- Many-to-many   students <-> courses
 --                (needs a junction table)`,"","An ER diagram draws entities (tables) as boxes and relationships as lines, with crow’s-foot ends showing one or many. Sketching it before you write CREATE TABLE prevents most design mistakes."],
-[2,"Beginner","Comparison, NOT and aliases","Small tools you use constantly",`SELECT name AS customer_name, age
+["Filtering","Beginner","Comparison, NOT and aliases","Small tools you use constantly",`SELECT name AS customer_name, age
 FROM customers c
 WHERE NOT city = 'Leeds'
   AND age <> 30
   AND age >= 18;`,"customer_name|age;Asha|34","Comparison operators: =, &lt;&gt; (or !=), &gt;, &lt;, &gt;=, &lt;=. NOT reverses a condition. AS gives a column or table a readable alias. SELECT * returns every column: handy for exploring, but avoid it in production code. To limit rows, MySQL and PostgreSQL use LIMIT, SQL Server uses TOP, and standard SQL uses FETCH FIRST."],
-[3,"Beginner","String functions","Clean and slice text",`SELECT UPPER(name) AS up,
+["Advanced","Beginner","String functions","Clean and slice text",`SELECT UPPER(name) AS up,
        LENGTH(name) AS len,
        SUBSTRING(name, 1, 2) AS first2,
        CONCAT(name, ' (', city, ')') AS label,
        TRIM('  hi  ') AS trimmed,
        REPLACE(city, 'Leeds', 'LDS') AS code
 FROM customers;`,"","UPPER and LOWER change case, LENGTH counts characters, SUBSTRING cuts a piece, CONCAT joins text, TRIM removes spaces and REPLACE swaps text. Names vary slightly (LEN in SQL Server, SUBSTR in Oracle)."],
-[3,"Beginner","Numeric and date functions","Round numbers, move dates",`SELECT ROUND(12.567, 1) AS r,
+["Advanced","Beginner","Numeric and date functions","Round numbers, move dates",`SELECT ROUND(12.567, 1) AS r,
        CEIL(4.2) AS up, FLOOR(4.8) AS down,
        ABS(-7) AS a, MOD(10, 3) AS m,
        CURRENT_DATE AS today,
        EXTRACT(YEAR FROM order_date) AS yr
 FROM orders;`,"","ROUND, CEIL, FLOOR, ABS and MOD cover most number work. For dates, CURRENT_DATE gives today, EXTRACT pulls out the year or month, and a date-difference function counts the gap (DATEDIFF, DATE_DIFF or plain subtraction, depending on the database)."],
-[3,"Beginner","CAST and NULL helpers","Convert types, handle NULL",`SELECT CAST('2024-05-01' AS DATE) AS d,
+["Advanced","Beginner","CAST and NULL helpers","Convert types, handle NULL",`SELECT CAST('2024-05-01' AS DATE) AS d,
        CAST(price AS INT) AS whole,
        amount / NULLIF(qty, 0) AS unit,
        IFNULL(phone, 'n/a') AS phone
 FROM products;`,"","CAST converts between types (CONVERT in SQL Server). NULLIF returns NULL when two values match, which prevents divide-by-zero errors. IFNULL, ISNULL and NVL are database-specific cousins of COALESCE."],
-[4,"Beginner","COUNT variants, MIN, MAX","Know what you are counting",`SELECT COUNT(*) AS all_rows,
+["Aggregation","Beginner","COUNT variants, MIN, MAX","Know what you are counting",`SELECT COUNT(*) AS all_rows,
        COUNT(phone) AS with_phone,
        COUNT(DISTINCT city) AS cities,
        MIN(age) AS youngest,
        MAX(age) AS oldest
 FROM customers;`,"all_rows|with_phone|cities|youngest|oldest;3|2|2|28|41","COUNT(*) counts rows, COUNT(column) skips NULLs, and COUNT(DISTINCT column) counts unique values. Group by several columns (GROUP BY city, status) to get one result per combination."],
-[5,"Intermediate","Multi-table joins","Chain more than two tables",`SELECT c.name, o.id, p.title
+["Joins","Intermediate","Multi-table joins","Chain more than two tables",`SELECT c.name, o.id, p.title
 FROM customers c
 JOIN orders o
   ON o.customer_id = c.id
@@ -548,14 +547,14 @@ JOIN order_items i
  AND i.qty > 1
 JOIN products p
   ON p.id = i.product_id;`,"","Add one JOIN at a time, each with its own ON, and combine conditions with AND. Tables with no direct link are joined through the table between them (customers to products goes via orders and order_items). CROSS JOIN is the only join with no condition."],
-[5,"Intermediate","ON versus WHERE, duplicates","Two classic join traps",`-- Keeps all customers:
+["Joins","Intermediate","ON versus WHERE, duplicates","Two classic join traps",`-- Keeps all customers:
 LEFT JOIN orders o ON o.customer_id = c.id
                    AND o.status = 'paid'
 
 -- Silently becomes an INNER JOIN:
 LEFT JOIN orders o ON o.customer_id = c.id
 WHERE o.status = 'paid'`,"","In an outer join, a filter in ON limits which right-side rows match, while the same filter in WHERE removes the NULL rows and defeats the join. Joining to a table with several matches multiplies rows (fan-out), so compare counts before and after. To find unmatched records, LEFT JOIN and filter for IS NULL. JOIN adds columns side by side; UNION stacks rows."],
-[6,"Intermediate","Subquery types","Scalar, row and correlated",`-- Scalar: one value
+["Advanced","Intermediate","Subquery types","Scalar, row and correlated",`-- Scalar: one value
 SELECT name FROM employees
 WHERE salary > (SELECT AVG(salary) FROM employees);
 
@@ -565,12 +564,12 @@ WHERE salary > (
   SELECT AVG(salary) FROM employees
   WHERE dept_id = e.dept_id
 );`,"","A scalar subquery returns one value, a multiple-row subquery returns a list (used with IN), and a correlated subquery refers to the outer row so it re-runs for each one. Subqueries can nest, but past two levels switch to CTEs for readability."],
-[6,"Intermediate","IN, EXISTS, ANY, ALL","Compare to a set",`SELECT name FROM employees
+["Advanced","Intermediate","IN, EXISTS, ANY, ALL","Compare to a set",`SELECT name FROM employees
 WHERE salary > ALL (
   SELECT salary FROM employees
   WHERE dept_id = 2
 );`,"","ANY is true if the comparison holds for at least one value in the list; ALL needs it to hold for every value. IN checks membership. EXISTS stops at the first match and is safer with NULLs; IN is simpler for short lists. Modern optimizers often treat them alike."],
-[6,"Intermediate","Multiple CTEs","CTE vs subquery vs temp table",`WITH dept_avg AS (
+["Advanced","Intermediate","Multiple CTEs","CTE vs subquery vs temp table",`WITH dept_avg AS (
   SELECT dept_id, AVG(salary) AS avg_sal
   FROM employees GROUP BY dept_id
 ),
@@ -581,20 +580,20 @@ above AS (
   WHERE e.salary > d.avg_sal
 )
 SELECT * FROM above;`,"","Separate CTEs with commas; later ones can use earlier ones. A CTE lives for one statement and is mainly about readability. A subquery is inline. A temporary table is stored for your session, so use it when you reuse a result many times or need to index it."],
-[7,"Intermediate","INTERSECT and EXCEPT","Common and different rows",`SELECT email FROM east_customers
+["Joins","Intermediate","INTERSECT and EXCEPT","Common and different rows",`SELECT email FROM east_customers
 INTERSECT
 SELECT email FROM west_customers;
 
 SELECT email FROM east_customers
 EXCEPT   -- MINUS in Oracle
 SELECT email FROM west_customers;`,"","INTERSECT returns rows found in both queries. EXCEPT (MINUS in Oracle) returns rows in the first but not the second. All set operators need the same number of columns with compatible types, remove duplicates unless you add ALL (where supported), and work on whole rows rather than matching keys like JOIN does."],
-[8,"Intermediate","ROW_NUMBER, RANK, DENSE_RANK, NTILE","Four ways to number rows",`SELECT name, salary,
+["Advanced","Intermediate","ROW_NUMBER, RANK, DENSE_RANK, NTILE","Four ways to number rows",`SELECT name, salary,
   ROW_NUMBER() OVER (ORDER BY salary DESC) AS rn,
   RANK()       OVER (ORDER BY salary DESC) AS rk,
   DENSE_RANK() OVER (ORDER BY salary DESC) AS dr,
   NTILE(2)     OVER (ORDER BY salary DESC) AS half
 FROM employees;`,"name|salary|rn|rk|dr|half;Ann|90|1|1|1|1;Bob|80|2|2|2|1;Cy|80|3|2|2|2;Di|70|4|4|3|2","ROW_NUMBER never repeats, RANK repeats on ties and then skips numbers, DENSE_RANK repeats without skipping, and NTILE(n) splits rows into n equal buckets. ROW_NUMBER is the tool for picking one row per group (the latest transaction per customer) and for flagging duplicates (rn above 1)."],
-[8,"Intermediate","LEAD, FIRST_VALUE, LAST_VALUE","Read other rows",`SELECT day, sales,
+["Advanced","Intermediate","LEAD, FIRST_VALUE, LAST_VALUE","Read other rows",`SELECT day, sales,
   LEAD(sales) OVER (ORDER BY day) AS next_day,
   FIRST_VALUE(sales) OVER (ORDER BY day) AS first_day,
   LAST_VALUE(sales) OVER (
@@ -602,7 +601,7 @@ FROM employees;`,"name|salary|rn|rk|dr|half;Ann|90|1|1|1|1;Bob|80|2|2|2|1;Cy|80|
     ROWS BETWEEN UNBOUNDED PRECEDING
              AND UNBOUNDED FOLLOWING) AS last_day
 FROM daily_sales;`,"","LEAD looks forward; FIRST_VALUE and LAST_VALUE read the ends of the frame. LAST_VALUE surprises people: the default frame stops at the current row, so you must widen it as shown. ROWS counts physical rows, while RANGE groups rows with equal ORDER BY values. Month-over-month growth is LAG plus arithmetic."],
-[9,"Intermediate","INSERT SELECT, UPDATE and DELETE with JOIN","Change rows using other tables",`INSERT INTO archive (id, total)
+["Engineering","Intermediate","INSERT SELECT, UPDATE and DELETE with JOIN","Change rows using other tables",`INSERT INTO archive (id, total)
 SELECT id, total FROM orders
 WHERE status = 'closed';
 
@@ -613,7 +612,7 @@ SET o.region = c.region;
 DELETE o FROM orders o
 JOIN customers c ON c.id = o.customer_id
 WHERE c.active = 0;`,"","INSERT INTO ... SELECT copies query results into a table. UPDATE and DELETE can join other tables to decide which rows change. These join forms are MySQL syntax; SQL Server uses FROM, and Postgres uses FROM or USING."],
-[9,"Intermediate","Safe UPDATE and DELETE","Never change blindly",`-- 1. Preview
+["Engineering","Intermediate","Safe UPDATE and DELETE","Never change blindly",`-- 1. Preview
 SELECT * FROM orders WHERE status = 'test';
 
 -- 2. Run inside a transaction
@@ -621,68 +620,68 @@ BEGIN;
 DELETE FROM orders WHERE status = 'test';
 -- check the row count, then:
 COMMIT;   -- or ROLLBACK;`,"","Write the WHERE as a SELECT first and check the row count, then wrap the change in a transaction so you can roll back. DELETE is logged and filterable; TRUNCATE empties the table fast. Neither replaces a backup. Remove duplicates by numbering with ROW_NUMBER and deleting rn above 1."],
-[10,"Intermediate","CREATE DATABASE and temp tables","Containers and scratch space",`CREATE DATABASE shop;
+["Engineering","Intermediate","CREATE DATABASE and temp tables","Containers and scratch space",`CREATE DATABASE shop;
 
 CREATE TEMPORARY TABLE recent AS
 SELECT * FROM orders
 WHERE order_date >= '2024-01-01';`,"","CREATE DATABASE makes a new database and CREATE SCHEMA a namespace inside one. A temporary table lives for your session and disappears afterwards, which is handy for multi-step work. SQL Server writes it as #recent."],
-[10,"Intermediate","ALTER in detail","Evolve a table safely",`ALTER TABLE users ADD COLUMN phone VARCHAR(15);
+["Engineering","Intermediate","ALTER in detail","Evolve a table safely",`ALTER TABLE users ADD COLUMN phone VARCHAR(15);
 ALTER TABLE users MODIFY COLUMN phone VARCHAR(20);
 ALTER TABLE users DROP COLUMN phone;
 ALTER TABLE users ADD CONSTRAINT uq_email UNIQUE (email);
 ALTER TABLE users DROP CONSTRAINT uq_email;`,"","ALTER can add, change or drop columns and add or remove constraints. Changing a type can fail or lose data if existing values don’t fit, and dropping a column is permanent. MODIFY is MySQL; Postgres uses ALTER COLUMN ... TYPE."],
-[11,"Intermediate","Kinds of keys","Candidate, alternate, surrogate",`-- Candidate key  any column set that could identify a row
+["Relational model","Intermediate","Kinds of keys","Candidate, alternate, surrogate",`-- Candidate key  any column set that could identify a row
 -- Primary key    the candidate you chose
 -- Alternate key  the candidates you did not choose
 -- Composite key  two or more columns together
 -- Surrogate key  system-made id (1, 2, 3...)
 -- Natural key    real-world value (email, ISBN)`,"","Example: email and employee_id could each identify an employee. Choose employee_id as the primary key and email becomes an alternate key (give it UNIQUE). Surrogate keys never change, so most designs use them. Referential integrity means every foreign key must match an existing parent row, so you can’t create an order for a customer that doesn’t exist."],
-[12,"Intermediate","Designing a database","From idea to tables",`-- Entity        Customer, Order, Product
+["Database design","Intermediate","Designing a database","From idea to tables",`-- Entity        Customer, Order, Product
 -- Attributes    name, email, price...
 -- Relationship  Customer places Order
 -- Cardinality   one customer : many orders`,"","Design in steps: find the entities (things you track), list their attributes (columns), decide how they relate, and set the cardinality (one-to-one, one-to-many, many-to-many). Then normalize, and denormalize only with a measured reason."],
-[12,"Advanced","BCNF, snowflake schema, SCD","Beyond 3NF",`-- BCNF              every determinant is a candidate key
+["Normalization","Advanced","BCNF, snowflake schema, SCD","Beyond 3NF",`-- BCNF              every determinant is a candidate key
 -- Star schema        fact table + flat dimensions
 -- Snowflake schema   dimensions split into sub-tables
 -- SCD Type 1         overwrite the old value
 -- SCD Type 2         add a new row, keep history`,"","BCNF is a stricter 3NF that removes the last odd anomalies. A snowflake schema normalizes dimensions (product to category) to save space at the cost of extra joins; a star schema stays flat for speed. SCD Type 1 overwrites changes, Type 2 keeps full history."],
-[13,"Advanced","SAVEPOINT and concurrency","Partial rollback, blocking",`BEGIN;
+["DBMS","Advanced","SAVEPOINT and concurrency","Partial rollback, blocking",`BEGIN;
 INSERT INTO orders VALUES (1, 100);
 SAVEPOINT sp1;
 INSERT INTO orders VALUES (2, 200);
 ROLLBACK TO sp1;   -- keeps order 1 only
 COMMIT;`,"","SAVEPOINT marks a spot you can roll back to without losing earlier work. Blocking is one transaction waiting on another’s lock. Pessimistic concurrency locks rows up front; optimistic concurrency skips locks but checks a version number at write time and retries on conflict. Read problems: a dirty read sees uncommitted data, a non-repeatable read sees a row change, and a phantom read sees new rows appear."],
-[14,"Advanced","Functions, sequences, synonyms","More reusable objects",`CREATE SEQUENCE order_seq START 1000;
+["Engineering","Advanced","Functions, sequences, synonyms","More reusable objects",`CREATE SEQUENCE order_seq START 1000;
 SELECT NEXT VALUE FOR order_seq;   -- SQL Server
 
 CREATE SYNONYM orders_syn FOR sales.orders;
 DECLARE @t TABLE (id INT);         -- table variable`,"","A scalar function returns one value; a table-valued function returns rows you query like a table. A sequence generates unique numbers independent of any table. A synonym is an alias for another object. A table variable is a small in-memory table scoped to a batch, lighter than a temporary table."],
-[15,"Advanced","Scans, seeks, statistics","Reading a plan",`EXPLAIN ANALYZE
+["Engineering","Advanced","Scans, seeks, statistics","Reading a plan",`EXPLAIN ANALYZE
 SELECT * FROM orders
 WHERE customer_id = 7;`,"","A table scan reads every row; an index seek jumps straight to the matching rows. Statistics tell the optimizer how many rows to expect, so stale statistics cause bad plans: refresh them after big loads. Index fragmentation (pages out of order after many changes) slows reads; rebuild or reorganize periodically."],
-[15,"Advanced","Tuning checklist","Habits that keep queries fast",`-- Avoid SELECT *, name the columns
+["Engineering","Advanced","Tuning checklist","Habits that keep queries fast",`-- Avoid SELECT *, name the columns
 -- Avoid DISTINCT used to hide a bad join
 -- Join on indexed, same-typed columns
 -- Filter early, aggregate before joining
 -- Prefer EXISTS to IN on big lists
 -- Check CTEs: some engines re-run them`,"","Find the bottleneck first: read the plan for the most expensive step instead of guessing. Parameter sniffing (SQL Server) happens when a cached plan built for one parameter value is slow for another; fixes include recompiling or restructuring the query. Rewriting a query often beats adding an index."],
-[16,"Professional","ETL vs ELT, full vs incremental","How data gets loaded",`-- ETL  transform first, then load
+["Engineering","Advanced","ETL vs ELT, full vs incremental","How data gets loaded",`-- ETL  transform first, then load
 -- ELT  load raw, transform in the warehouse
 -- Full load         reload everything each run
 -- Incremental load  only new or changed rows`,"","ELT dominates on cloud warehouses (Snowflake, BigQuery, Databricks) because they transform at scale. Full loads are simple but slow on big tables; incremental loads are fast but need a way to know what changed. OLTP systems feed OLAP warehouses through these pipelines."],
-[16,"Professional","CDC and watermark loads","Detect what changed",`SELECT *
+["Engineering","Advanced","CDC and watermark loads","Detect what changed",`SELECT *
 FROM source_orders
 WHERE modified_at > (
   SELECT MAX(loaded_up_to) FROM etl_watermark
 );`,"","A watermark stores how far the last load got, so the next run picks up only newer rows. Change Data Capture (CDC) reads the database log to catch inserts, updates and deletes, including deletes that timestamps miss. Change Tracking is SQL Server’s lighter built-in version. Apply the changes with MERGE."],
-[16,"Professional","SCD Type 2 in SQL","Keep history of changes",`UPDATE dim_customer
+["Engineering","Advanced","SCD Type 2 in SQL","Keep history of changes",`UPDATE dim_customer
 SET end_date = CURRENT_DATE, is_current = 0
 WHERE id = 5 AND is_current = 1;
 
 INSERT INTO dim_customer
   (id, city, start_date, end_date, is_current)
 VALUES (5, 'Pune', CURRENT_DATE, NULL, 1);`,"","Close the old row by setting its end date, then insert a new current row. Query is_current = 1 for today’s view, or a date range for any past moment."],
-[16,"Professional","Deduplication and data quality","Clean data on the way in",`SELECT *
+["Engineering","Advanced","Deduplication and data quality","Clean data on the way in",`SELECT *
 FROM (
   SELECT *,
     ROW_NUMBER() OVER (
@@ -691,54 +690,54 @@ FROM (
   FROM staging_customers
 ) t
 WHERE rn = 1;`,"","Keep one row per business key with ROW_NUMBER. Add checks for NULLs in required columns, duplicate keys, out-of-range values and orphaned foreign keys, and quarantine bad rows instead of loading them. Reconcile by comparing row counts and sums between source and target."],
-[16,"Professional","Audit columns, late data, errors","Make pipelines trustworthy",`CREATE TABLE fact_orders (
+["Engineering","Advanced","Audit columns, late data, errors","Make pipelines trustworthy",`CREATE TABLE fact_orders (
   id INT,
   amount DECIMAL(10,2),
   created_at TIMESTAMP,
   modified_at TIMESTAMP,
   load_batch INT
 );`,"","Audit columns (created, modified, batch id) record who and when. Late-arriving data shows up after its date has already loaded, so use a lookback window or reload recent partitions. Handle errors with retries and an error table, and run work in batches so a failure touches only one batch. Partition big tables by date for faster loads and cleanup."],
-  ["Data","Beginner","Data is more than numbers","Facts become useful when they have context","-- Raw values\n42\n'Kolkata'\n'2026-11-03'\n\n-- Context turns them into information\n-- temperature = 42 °C\n-- city = Kolkata\n-- recorded_on = 2026-11-03","","Data is a recorded fact. Information is data organised so it answers a question. Knowledge is the interpretation we build from information and experience. Metadata describes the data itself—for example, a column name, data type, unit or timestamp."],
-  ["Data","Beginner","Structured vs semi-structured vs unstructured","Three common shapes of data","-- Structured: rows and columns\nemployee_id | name | salary\n101         | Asha | 50000\n\n-- Semi-structured: JSON\n{\"employee_id\":101,\"name\":\"Asha\"}\n\n-- Unstructured: PDF, image, audio","","Structured data follows a predictable schema. Semi-structured data has labels or markers but flexible fields, as in JSON. Unstructured data such as images, audio and documents has no simple fixed table structure. Real systems often combine all three."],
-  ["Data","Beginner","Field, record, table and dataset","Zoom from one value to a collection","employee_id = 101   -- field\n\n101, Asha, 50000    -- record\n\nemployees           -- table\n\nHR database         -- database","","A field stores one attribute value. A record groups attributes for one entity. A table stores records of the same kind. A dataset is a collection prepared for a purpose. In relational databases, rows are records and columns are attributes."],
-  ["Data","Beginner","Why files become difficult","The limits of isolated file systems","HR.xlsx\nPayroll.csv\nAccessControl.txt\n\nSame employee appears in all three.\nOne update is missed → conflicting data.","","Files and spreadsheets are useful at small scale. Trouble begins when applications keep separate copies, rules differ, several people update simultaneously, and security or recovery becomes important. Databases centralise management and provide controlled access."],
-  ["DBMS","Beginner","What is a database?","An organised collection of related data","Customers ──< Orders >── Products\n\nA customer can place many orders.\nAn order can contain many products.","","A database is an organised collection of related data designed to be stored, queried and updated. It models some part of the real world: customers, orders, employees, payments or events. The relationships between records are as important as the records themselves."],
-  ["DBMS","Beginner","Database vs DBMS vs SQL","Do not confuse the three","DATABASE  = the organised data\nDBMS      = software managing the data\nSQL       = language used to query it\n\nExamples of DBMS:\nPostgreSQL · MySQL · SQL Server · Oracle","","A database is the data and its structure. A Database Management System (DBMS) is the software that creates, stores, secures and retrieves it. SQL is a language used to communicate with relational DBMSs. SQL is not itself a database product."],
-  ["DBMS","Beginner","What does a DBMS actually do?","The responsibilities behind every query","Application\n    ↓ SQL / API\n    DBMS\n    ├─ Parse and optimise\n    ├─ Read / write storage\n    ├─ Enforce constraints\n    ├─ Manage concurrent users\n    ├─ Apply permissions\n    └─ Recover after failure","","A DBMS does far more than save rows. It interprets requests, chooses execution plans, manages memory and disk, enforces data rules, coordinates concurrent transactions, checks permissions and provides backup and recovery mechanisms."],
-  ["DBMS","Beginner","Why not just use spreadsheets?","Choose the right tool for the job","Spreadsheet:\n• Small, manual, lightweight\n\nDBMS:\n• Shared, concurrent access\n• Integrity constraints\n• Fine-grained permissions\n• Transactions and recovery\n• Querying at scale","","Spreadsheets are excellent for small trackers and quick analysis. A DBMS becomes valuable when data is shared by applications and users, consistency matters, access must be controlled, or data volume and query complexity grow. The goal is not to replace every spreadsheet."],
-  ["DBMS","Beginner","DBMS users and roles","Who works with a database?","End user → uses an application\nDeveloper → builds data features\nAnalyst → asks business questions\nDBA → secures, backs up and tunes\nData engineer → builds data pipelines","","A database system involves people as well as software. End users interact through applications; developers build those applications; analysts explore data; DBAs operate the database; data engineers move and transform data between systems. In smaller teams, one person may perform several roles."],
-  ["DBMS","Intermediate","Types of database systems","Relational is important—but not the only model","Relational      → tables\nDocument        → JSON-like documents\nKey-value       → key → value\nWide-column     → column families\nGraph           → nodes and edges\nTime-series     → timestamped events","","Database systems use different data models for different access patterns. Relational databases excel at structured data and relationships. Document, key-value, graph, wide-column and time-series systems solve other problems. No model is universally best."],
-  ["Relational model","Beginner","The relational model","Represent data as relations","employees\n+-------------+----------+-------------+\n| employee_id | name     | department  |\n+-------------+----------+-------------+\n| 101         | Asha     | Engineering |\n| 102         | Ravi     | Finance     |\n+-------------+----------+-------------+","","The relational model represents data using relations, commonly displayed as tables. A relation has attributes (columns) and tuples (rows). Each attribute has a domain of allowed values. The model gives us a precise foundation for keys, constraints and relational operations."],
-  ["Relational model","Beginner","Rows, columns and domains","The vocabulary of relational data","Relation  = table-like structure\nTuple     = row\nAttribute = column\nDomain    = allowed values\n\nsalary → DECIMAL(10,2)\nhire_date → DATE","","A tuple represents one fact or entity instance. An attribute names a property. Its domain defines valid values, often implemented through a data type and constraints. Relational theory treats relations as sets; SQL tables may preserve duplicate rows unless constrained."],
-  ["Relational model","Beginner","Keys identify rows","Superkey, candidate key and primary key","employee_id  → unique\nemail        → unique\n\nCandidate keys: employee_id, email\nChosen primary key: employee_id\nOther candidate key: alternate key","","A superkey is any attribute set that uniquely identifies a row. A candidate key is a minimal superkey. One candidate key is selected as the primary key; remaining candidates are alternate keys. A good key is stable, unique and minimal."],
-  ["Relational model","Beginner","Foreign keys create relationships","Connect rows across tables","departments\n department_id (PK)\n department_name\n\nemployees\n employee_id (PK)\n department_id (FK) ─────┐\n                        └→ departments.department_id","","A foreign key in one table references a candidate or primary key in another table. It enforces referential integrity: an employee cannot reference a department that does not exist, unless the relationship is optional and NULL is allowed."],
-  ["Relational model","Intermediate","One-to-one, one-to-many, many-to-many","Understand relationship cardinality","One-to-one:     Person ↔ Passport\nOne-to-many:    Department → Employees\nMany-to-many:   Students ↔ Courses\n                via Enrolments","","Cardinality describes how many instances can participate in a relationship. One-to-many is commonly represented by a foreign key on the many side. Many-to-many relationships need a junction table containing foreign keys to both participating tables."],
-  ["Database design","Beginner","Why database design matters","Bad structure creates expensive problems","Bad: order row repeats customer address\n\norder_id | customer | address | total\n1        | Asha     | Kolkata | 500\n2        | Asha     | Kolkata | 900\n\nBetter: Customers + Orders","","Database design decides what entities exist, how they relate and which rules must always hold. Good design reduces accidental duplication, prevents anomalies, makes queries understandable and supports future change. Design first; don't just create tables that mirror a spreadsheet."],
-  ["Database design","Intermediate","ER diagrams","Model before creating tables","CUSTOMER 1 ─────< ORDER\n   |                 |\n customer_id       order_id\n name              order_date\n email             customer_id (FK)","","An Entity-Relationship (ER) diagram describes entities, their attributes and the relationships between them. It helps business users and developers agree on the data model before implementing tables. Crow's-foot notation commonly shows one, optional and many cardinalities."],
-  ["Database design","Intermediate","Attributes and entity types","Choose what deserves its own table","CUSTOMER\n- customer_id\n- name\n- email\n\nORDER\n- order_id\n- order_date\n- customer_id","","An entity is a thing the business needs to track, such as a customer or order. Attributes describe it. A useful test: does this concept have its own identity, attributes, relationships or lifecycle? If yes, it may deserve its own entity."],
-  ["Normalization","Beginner","What is normalization?","Organise data to reduce anomalies","One giant table:\nOrder | Customer | Address | Product\n\nSplit by subject:\nCustomers | Orders | Products\n                 |\n             OrderItems","","Normalization is a disciplined way to organise relational tables to reduce unwanted redundancy and update anomalies. It decomposes a large relation into smaller related relations while aiming to preserve information and dependencies."],
-  ["Normalization","Intermediate","Update, insert and delete anomalies","The problems normalization prevents","Update anomaly:\nChange one customer address in 8 rows.\n\nInsert anomaly:\nCannot add a product until an order exists.\n\nDelete anomaly:\nDeleting the last order removes product details.","","An update anomaly occurs when one fact must be changed in several places. An insert anomaly makes it difficult to store one fact without another. A delete anomaly removes useful information unintentionally. These often signal that unrelated facts are mixed in one table."],
-  ["Normalization","Intermediate","Functional dependencies","When one attribute determines another","employee_id → employee_name\n\ndepartment_id → department_name\n\n(employee_id, project_id)\n    → assigned_hours","","A functional dependency X → Y means that whenever two rows agree on X, they must also agree on Y. X is the determinant. Functional dependencies express business rules and are the foundation for candidate keys and normalization."],
-  ["Normalization","Intermediate","First Normal Form (1NF)","One value per cell","Not ideal:\norder_id | products\n10       | Pen, Book, Bag\n\n1NF design:\norder_id | product\n10       | Pen\n10       | Book\n10       | Bag","","First Normal Form requires each attribute value to be atomic relative to the chosen domain and eliminates repeating groups. A comma-separated list inside one cell is difficult to validate, join, filter and update. Represent repeating items as separate rows."],
-  ["Normalization","Intermediate","Second Normal Form (2NF)","No partial dependency on a composite key","OrderLine key = (order_id, product_id)\n\norder_id → order_date\nproduct_id → product_name\n\nMove order data and product data\nout of OrderLine.","","A relation is in 2NF when it is in 1NF and every non-prime attribute depends on the whole candidate key—not just part of a composite candidate key. Partial dependencies are the issue; tables with only single-attribute candidate keys are automatically in 2NF if in 1NF."],
-  ["Normalization","Intermediate","Third Normal Form (3NF)","Remove transitive dependencies","employee_id → department_id\ndepartment_id → department_name\n\nTherefore:\nemployee_id → department_name\n\nStore department_name in Departments.","","A relation is in 3NF when it is in 2NF and non-key attributes do not depend transitively on candidate keys (more formally, for every non-trivial FD X → A, X is a superkey or A is prime). Move facts about a department into a department relation."],
-  ["Normalization","Advanced","BCNF","Every determinant must be a superkey","If X → Y holds, X must be a superkey.\n\nBCNF is stricter than 3NF.\n\nA relation can satisfy 3NF\nand still violate BCNF.","","Boyce-Codd Normal Form requires every determinant of a non-trivial functional dependency to be a superkey. It removes certain anomalies that 3NF can permit, though decomposition must be considered carefully because dependency preservation may be lost."],
-  ["SQL foundations","Beginner","SQL: the language of relational data","Describe what result you want","SELECT first_name, salary\nFROM employees\nWHERE salary > 50000;","","SQL (Structured Query Language) is a declarative language. You state which data you want and the conditions it must satisfy; the DBMS chooses an execution strategy. SQL includes commands for querying, defining, changing and controlling data."],
-  ["SQL foundations","Beginner","SQL is declarative","Say what, not every step how","SELECT department_id, AVG(salary)\nFROM employees\nGROUP BY department_id;","","In a procedural program, you often specify each loop and operation. In declarative SQL, you describe the desired result. The optimizer can choose scans, indexes, join algorithms and execution order while preserving query semantics."],
-  ["SQL foundations","Beginner","The five SQL command families","A map of the language","DQL → SELECT\nDML → INSERT, UPDATE, DELETE, MERGE\nDDL → CREATE, ALTER, DROP\nDCL → GRANT, REVOKE\nTCL → COMMIT, ROLLBACK, SAVEPOINT","","These labels are a common teaching classification, not a perfectly universal formal boundary. DQL is often used for querying, DML for changing rows, DDL for defining objects, DCL for permissions and TCL for transaction control."],
-  ["SQL foundations","Beginner","Your first SELECT query","Read data from a table","SELECT first_name, last_name\nFROM employees;","","SELECT names the expressions or columns to return. FROM identifies the source. This is the basic shape of a query. Start with explicit columns rather than SELECT * when building production queries."],
-  ["SQL foundations","Beginner","Logical query processing order","SQL is written in a different order","FROM → WHERE → GROUP BY\n→ HAVING → SELECT → ORDER BY\n→ LIMIT / FETCH","","The written query begins with SELECT, but a useful logical model starts with FROM, filters rows with WHERE, groups them, filters groups with HAVING, computes the SELECT list, sorts and finally limits. Actual physical execution may differ because of optimization."],
-  ["SQL foundations","Intermediate","NULL is not zero","Unknown values need special handling","SELECT employee_id\nFROM employees\nWHERE commission_pct IS NULL;","","NULL represents missing or unknown information, not zero or an empty string. Comparisons with NULL generally produce UNKNOWN, not TRUE or FALSE. Use IS NULL and IS NOT NULL; understand three-valued logic when combining conditions."],
-  ["SQL foundations","Intermediate","JOIN: combine related tables","The relational model in action","SELECT e.first_name, d.department_name\nFROM employees e\nJOIN departments d\n  ON d.department_id = e.department_id;","","A join combines rows from two sources according to a matching condition. An INNER JOIN returns matching pairs. A LEFT JOIN preserves every left-side row and fills missing right-side values with NULL. Join keys should reflect the relationship."],
-  ["SQL foundations","Intermediate","GROUP BY and HAVING","Summarise data by category","SELECT department_id, COUNT(*) AS headcount\nFROM employees\nGROUP BY department_id\nHAVING COUNT(*) >= 5;","","GROUP BY forms groups based on matching values. Aggregate functions calculate a result per group. WHERE filters individual rows before grouping; HAVING filters groups after aggregation. This difference is central to analytical SQL."],
-  ["SQL foundations","Advanced","Window functions","Calculate across rows without collapsing them","SELECT employee_id, department_id, salary,\n       DENSE_RANK() OVER (\n         PARTITION BY department_id\n         ORDER BY salary DESC\n       ) AS salary_rank\nFROM employees;","","Window functions calculate across a related set of rows while keeping each input row in the result. PARTITION BY defines groups; ORDER BY defines sequence; a frame can limit which neighbouring rows contribute. Use them for ranking, running totals and comparisons."],
-  ["SQL foundations","Advanced","CTEs make complex SQL readable","Build a query in named steps","WITH department_pay AS (\n  SELECT department_id, AVG(salary) AS avg_pay\n  FROM employees\n  GROUP BY department_id\n)\nSELECT *\nFROM department_pay\nWHERE avg_pay > 60000;","","A Common Table Expression (CTE) gives a subquery a name within one statement. It helps break complex logic into readable stages. Recursive CTEs can traverse hierarchies. A CTE is not automatically materialized; behavior depends on the optimizer and DBMS."],
-  ["DBMS","Advanced","Transactions and ACID","Keep related changes reliable","BEGIN;\nUPDATE accounts SET balance = balance - 100\nWHERE account_id = 1;\nUPDATE accounts SET balance = balance + 100\nWHERE account_id = 2;\nCOMMIT;","","A transaction groups operations into one logical unit. ACID means Atomicity, Consistency, Isolation and Durability. If one transfer step fails, the transaction should roll back rather than leave money removed from one account but not added to the other."],
-  ["DBMS","Advanced","Indexes and query performance","Trade storage and write cost for faster reads","CREATE INDEX idx_employee_dept\nON employees(department_id);\n\nEXPLAIN\nSELECT * FROM employees\nWHERE department_id = 10;","","An index is an auxiliary data structure that helps locate rows without scanning the entire table. B-tree indexes commonly support equality and range predicates. Indexes consume storage and add write overhead, so create them for real access patterns and validate with execution plans."],
-  ["DBMS","Advanced","Concurrency, locks and isolation","Many users, one consistent database","Transaction A reads stock = 5\nTransaction B reads stock = 5\nBoth try to sell 4 units.\n\nConcurrency control prevents\nboth from blindly overwriting each other.","","Concurrency control coordinates simultaneous transactions. Locks, multiversion concurrency control (MVCC), isolation levels and conflict detection help prevent anomalies such as lost updates, dirty reads and inconsistent reads. Exact behavior differs by DBMS."],
-  ["DBMS","Advanced","Backup, recovery and durability","Plan for failure before it happens","Full backup + incremental backups\nTransaction log / WAL\nRestore test\nRecovery time objective (RTO)\nRecovery point objective (RPO)","","Backups protect against loss, while transaction logs help recover to a point in time. RTO is how quickly service must return; RPO is how much data loss is tolerable. A backup strategy is incomplete until restore procedures are tested."],
-  ["DBMS","Advanced","OLTP vs OLAP","Operational systems and analytical systems","OLTP:\n• Many short transactions\n• Current operational records\n• Frequent inserts and updates\n\nOLAP:\n• Large analytical queries\n• Historical data\n• Aggregations and scans","","Online Transaction Processing (OLTP) systems support day-to-day operations such as payments and orders. Online Analytical Processing (OLAP) systems support reporting and analysis across large datasets. Their schemas, storage and performance goals often differ."],
-  ["DBMS","Advanced","Distributed databases and replication","Data across machines","Replication → copies data to other nodes\nSharding    → splits data across nodes\nPartitioning→ divides a logical dataset\n\nEach solves a different scaling problem.","","Replication maintains copies for availability or read scaling. Sharding distributes different subsets of data across machines. Partitioning divides a dataset into manageable pieces and may occur within one database. Distributed systems add network failures and consistency trade-offs."]
+["Data","Beginner","Data is more than numbers","Facts become useful when they have context","-- Raw values\n42\n'Kolkata'\n'2026-11-03'\n\n-- Context turns them into information\n-- temperature = 42 °C\n-- city = Kolkata\n-- recorded_on = 2026-11-03","","Data is a recorded fact. Information is data organised so it answers a question. Knowledge is the interpretation we build from information and experience. Metadata describes the data itself—for example, a column name, data type, unit or timestamp."],
+["Data","Beginner","Structured vs semi-structured vs unstructured","Three common shapes of data","-- Structured: rows and columns\nemployee_id | name | salary\n101         | Asha | 50000\n\n-- Semi-structured: JSON\n{\"employee_id\":101,\"name\":\"Asha\"}\n\n-- Unstructured: PDF, image, audio","","Structured data follows a predictable schema. Semi-structured data has labels or markers but flexible fields, as in JSON. Unstructured data such as images, audio and documents has no simple fixed table structure. Real systems often combine all three."],
+["Data","Beginner","Field, record, table and dataset","Zoom from one value to a collection","employee_id = 101   -- field\n\n101, Asha, 50000    -- record\n\nemployees           -- table\n\nHR database         -- database","","A field stores one attribute value. A record groups attributes for one entity. A table stores records of the same kind. A dataset is a collection prepared for a purpose. In relational databases, rows are records and columns are attributes."],
+["Data","Beginner","Why files become difficult","The limits of isolated file systems","HR.xlsx\nPayroll.csv\nAccessControl.txt\n\nSame employee appears in all three.\nOne update is missed → conflicting data.","","Files and spreadsheets are useful at small scale. Trouble begins when applications keep separate copies, rules differ, several people update simultaneously, and security or recovery becomes important. Databases centralise management and provide controlled access."],
+["DBMS","Beginner","What is a database?","An organised collection of related data","Customers ──< Orders >── Products\n\nA customer can place many orders.\nAn order can contain many products.","","A database is an organised collection of related data designed to be stored, queried and updated. It models some part of the real world: customers, orders, employees, payments or events. The relationships between records are as important as the records themselves."],
+["DBMS","Beginner","Database vs DBMS vs SQL","Do not confuse the three","DATABASE  = the organised data\nDBMS      = software managing the data\nSQL       = language used to query it\n\nExamples of DBMS:\nPostgreSQL · MySQL · SQL Server · Oracle","","A database is the data and its structure. A Database Management System (DBMS) is the software that creates, stores, secures and retrieves it. SQL is a language used to communicate with relational DBMSs. SQL is not itself a database product."],
+["DBMS","Beginner","What does a DBMS actually do?","The responsibilities behind every query","Application\n    ↓ SQL / API\n    DBMS\n    ├─ Parse and optimise\n    ├─ Read / write storage\n    ├─ Enforce constraints\n    ├─ Manage concurrent users\n    ├─ Apply permissions\n    └─ Recover after failure","","A DBMS does far more than save rows. It interprets requests, chooses execution plans, manages memory and disk, enforces data rules, coordinates concurrent transactions, checks permissions and provides backup and recovery mechanisms."],
+["DBMS","Beginner","Why not just use spreadsheets?","Choose the right tool for the job","Spreadsheet:\n• Small, manual, lightweight\n\nDBMS:\n• Shared, concurrent access\n• Integrity constraints\n• Fine-grained permissions\n• Transactions and recovery\n• Querying at scale","","Spreadsheets are excellent for small trackers and quick analysis. A DBMS becomes valuable when data is shared by applications and users, consistency matters, access must be controlled, or data volume and query complexity grow. The goal is not to replace every spreadsheet."],
+["DBMS","Beginner","DBMS users and roles","Who works with a database?","End user → uses an application\nDeveloper → builds data features\nAnalyst → asks business questions\nDBA → secures, backs up and tunes\nData engineer → builds data pipelines","","A database system involves people as well as software. End users interact through applications; developers build those applications; analysts explore data; DBAs operate the database; data engineers move and transform data between systems. In smaller teams, one person may perform several roles."],
+["DBMS","Intermediate","Types of database systems","Relational is important—but not the only model","Relational      → tables\nDocument        → JSON-like documents\nKey-value       → key → value\nWide-column     → column families\nGraph           → nodes and edges\nTime-series     → timestamped events","","Database systems use different data models for different access patterns. Relational databases excel at structured data and relationships. Document, key-value, graph, wide-column and time-series systems solve other problems. No model is universally best."],
+["Relational model","Beginner","The relational model","Represent data as relations","employees\n+-------------+----------+-------------+\n| employee_id | name     | department  |\n+-------------+----------+-------------+\n| 101         | Asha     | Engineering |\n| 102         | Ravi     | Finance     |\n+-------------+----------+-------------+","","The relational model represents data using relations, commonly displayed as tables. A relation has attributes (columns) and tuples (rows). Each attribute has a domain of allowed values. The model gives us a precise foundation for keys, constraints and relational operations."],
+["Relational model","Beginner","Rows, columns and domains","The vocabulary of relational data","Relation  = table-like structure\nTuple     = row\nAttribute = column\nDomain    = allowed values\n\nsalary → DECIMAL(10,2)\nhire_date → DATE","","A tuple represents one fact or entity instance. An attribute names a property. Its domain defines valid values, often implemented through a data type and constraints. Relational theory treats relations as sets; SQL tables may preserve duplicate rows unless constrained."],
+["Relational model","Beginner","Keys identify rows","Superkey, candidate key and primary key","employee_id  → unique\nemail        → unique\n\nCandidate keys: employee_id, email\nChosen primary key: employee_id\nOther candidate key: alternate key","","A superkey is any attribute set that uniquely identifies a row. A candidate key is a minimal superkey. One candidate key is selected as the primary key; remaining candidates are alternate keys. A good key is stable, unique and minimal."],
+["Relational model","Beginner","Foreign keys create relationships","Connect rows across tables","departments\n department_id (PK)\n department_name\n\nemployees\n employee_id (PK)\n department_id (FK) ─────┐\n                        └→ departments.department_id","","A foreign key in one table references a candidate or primary key in another table. It enforces referential integrity: an employee cannot reference a department that does not exist, unless the relationship is optional and NULL is allowed."],
+["Relational model","Intermediate","One-to-one, one-to-many, many-to-many","Understand relationship cardinality","One-to-one:     Person ↔ Passport\nOne-to-many:    Department → Employees\nMany-to-many:   Students ↔ Courses\n                via Enrolments","","Cardinality describes how many instances can participate in a relationship. One-to-many is commonly represented by a foreign key on the many side. Many-to-many relationships need a junction table containing foreign keys to both participating tables."],
+["Database design","Beginner","Why database design matters","Bad structure creates expensive problems","Bad: order row repeats customer address\n\norder_id | customer | address | total\n1        | Asha     | Kolkata | 500\n2        | Asha     | Kolkata | 900\n\nBetter: Customers + Orders","","Database design decides what entities exist, how they relate and which rules must always hold. Good design reduces accidental duplication, prevents anomalies, makes queries understandable and supports future change. Design first; don't just create tables that mirror a spreadsheet."],
+["Database design","Intermediate","ER diagrams","Model before creating tables","CUSTOMER 1 ─────< ORDER\n   |                 |\n customer_id       order_id\n name              order_date\n email             customer_id (FK)","","An Entity-Relationship (ER) diagram describes entities, their attributes and the relationships between them. It helps business users and developers agree on the data model before implementing tables. Crow's-foot notation commonly shows one, optional and many cardinalities."],
+["Database design","Intermediate","Attributes and entity types","Choose what deserves its own table","CUSTOMER\n- customer_id\n- name\n- email\n\nORDER\n- order_id\n- order_date\n- customer_id","","An entity is a thing the business needs to track, such as a customer or order. Attributes describe it. A useful test: does this concept have its own identity, attributes, relationships or lifecycle? If yes, it may deserve its own entity."],
+["Normalization","Beginner","What is normalization?","Organise data to reduce anomalies","One giant table:\nOrder | Customer | Address | Product\n\nSplit by subject:\nCustomers | Orders | Products\n                 |\n             OrderItems","","Normalization is a disciplined way to organise relational tables to reduce unwanted redundancy and update anomalies. It decomposes a large relation into smaller related relations while aiming to preserve information and dependencies."],
+["Normalization","Intermediate","Update, insert and delete anomalies","The problems normalization prevents","Update anomaly:\nChange one customer address in 8 rows.\n\nInsert anomaly:\nCannot add a product until an order exists.\n\nDelete anomaly:\nDeleting the last order removes product details.","","An update anomaly occurs when one fact must be changed in several places. An insert anomaly makes it difficult to store one fact without another. A delete anomaly removes useful information unintentionally. These often signal that unrelated facts are mixed in one table."],
+["Normalization","Intermediate","Functional dependencies","When one attribute determines another","employee_id → employee_name\n\ndepartment_id → department_name\n\n(employee_id, project_id)\n    → assigned_hours","","A functional dependency X → Y means that whenever two rows agree on X, they must also agree on Y. X is the determinant. Functional dependencies express business rules and are the foundation for candidate keys and normalization."],
+["Normalization","Intermediate","First Normal Form (1NF)","One value per cell","Not ideal:\norder_id | products\n10       | Pen, Book, Bag\n\n1NF design:\norder_id | product\n10       | Pen\n10       | Book\n10       | Bag","","First Normal Form requires each attribute value to be atomic relative to the chosen domain and eliminates repeating groups. A comma-separated list inside one cell is difficult to validate, join, filter and update. Represent repeating items as separate rows."],
+["Normalization","Intermediate","Second Normal Form (2NF)","No partial dependency on a composite key","OrderLine key = (order_id, product_id)\n\norder_id → order_date\nproduct_id → product_name\n\nMove order data and product data\nout of OrderLine.","","A relation is in 2NF when it is in 1NF and every non-prime attribute depends on the whole candidate key—not just part of a composite candidate key. Partial dependencies are the issue; tables with only single-attribute candidate keys are automatically in 2NF if in 1NF."],
+["Normalization","Intermediate","Third Normal Form (3NF)","Remove transitive dependencies","employee_id → department_id\ndepartment_id → department_name\n\nTherefore:\nemployee_id → department_name\n\nStore department_name in Departments.","","A relation is in 3NF when it is in 2NF and non-key attributes do not depend transitively on candidate keys (more formally, for every non-trivial FD X → A, X is a superkey or A is prime). Move facts about a department into a department relation."],
+["Normalization","Advanced","BCNF","Every determinant must be a superkey","If X → Y holds, X must be a superkey.\n\nBCNF is stricter than 3NF.\n\nA relation can satisfy 3NF\nand still violate BCNF.","","Boyce-Codd Normal Form requires every determinant of a non-trivial functional dependency to be a superkey. It removes certain anomalies that 3NF can permit, though decomposition must be considered carefully because dependency preservation may be lost."],
+["SQL foundations","Beginner","SQL: the language of relational data","Describe what result you want","SELECT first_name, salary\nFROM employees\nWHERE salary > 50000;","","SQL (Structured Query Language) is a declarative language. You state which data you want and the conditions it must satisfy; the DBMS chooses an execution strategy. SQL includes commands for querying, defining, changing and controlling data."],
+["SQL foundations","Beginner","SQL is declarative","Say what, not every step how","SELECT department_id, AVG(salary)\nFROM employees\nGROUP BY department_id;","","In a procedural program, you often specify each loop and operation. In declarative SQL, you describe the desired result. The optimizer can choose scans, indexes, join algorithms and execution order while preserving query semantics."],
+["SQL foundations","Beginner","The five SQL command families","A map of the language","DQL → SELECT\nDML → INSERT, UPDATE, DELETE, MERGE\nDDL → CREATE, ALTER, DROP\nDCL → GRANT, REVOKE\nTCL → COMMIT, ROLLBACK, SAVEPOINT","","These labels are a common teaching classification, not a perfectly universal formal boundary. DQL is often used for querying, DML for changing rows, DDL for defining objects, DCL for permissions and TCL for transaction control."],
+["SQL foundations","Beginner","Your first SELECT query","Read data from a table","SELECT first_name, last_name\nFROM employees;","","SELECT names the expressions or columns to return. FROM identifies the source. This is the basic shape of a query. Start with explicit columns rather than SELECT * when building production queries."],
+["SQL foundations","Beginner","Logical query processing order","SQL is written in a different order","FROM → WHERE → GROUP BY\n→ HAVING → SELECT → ORDER BY\n→ LIMIT / FETCH","","The written query begins with SELECT, but a useful logical model starts with FROM, filters rows with WHERE, groups them, filters groups with HAVING, computes the SELECT list, sorts and finally limits. Actual physical execution may differ because of optimization."],
+["SQL foundations","Intermediate","NULL is not zero","Unknown values need special handling","SELECT employee_id\nFROM employees\nWHERE commission_pct IS NULL;","","NULL represents missing or unknown information, not zero or an empty string. Comparisons with NULL generally produce UNKNOWN, not TRUE or FALSE. Use IS NULL and IS NOT NULL; understand three-valued logic when combining conditions."],
+["SQL foundations","Intermediate","JOIN: combine related tables","The relational model in action","SELECT e.first_name, d.department_name\nFROM employees e\nJOIN departments d\n  ON d.department_id = e.department_id;","","A join combines rows from two sources according to a matching condition. An INNER JOIN returns matching pairs. A LEFT JOIN preserves every left-side row and fills missing right-side values with NULL. Join keys should reflect the relationship."],
+["SQL foundations","Intermediate","GROUP BY and HAVING","Summarise data by category","SELECT department_id, COUNT(*) AS headcount\nFROM employees\nGROUP BY department_id\nHAVING COUNT(*) >= 5;","","GROUP BY forms groups based on matching values. Aggregate functions calculate a result per group. WHERE filters individual rows before grouping; HAVING filters groups after aggregation. This difference is central to analytical SQL."],
+["SQL foundations","Advanced","Window functions","Calculate across rows without collapsing them","SELECT employee_id, department_id, salary,\n       DENSE_RANK() OVER (\n         PARTITION BY department_id\n         ORDER BY salary DESC\n       ) AS salary_rank\nFROM employees;","","Window functions calculate across a related set of rows while keeping each input row in the result. PARTITION BY defines groups; ORDER BY defines sequence; a frame can limit which neighbouring rows contribute. Use them for ranking, running totals and comparisons."],
+["SQL foundations","Advanced","CTEs make complex SQL readable","Build a query in named steps","WITH department_pay AS (\n  SELECT department_id, AVG(salary) AS avg_pay\n  FROM employees\n  GROUP BY department_id\n)\nSELECT *\nFROM department_pay\nWHERE avg_pay > 60000;","","A Common Table Expression (CTE) gives a subquery a name within one statement. It helps break complex logic into readable stages. Recursive CTEs can traverse hierarchies. A CTE is not automatically materialized; behavior depends on the optimizer and DBMS."],
+["DBMS","Advanced","Transactions and ACID","Keep related changes reliable","BEGIN;\nUPDATE accounts SET balance = balance - 100\nWHERE account_id = 1;\nUPDATE accounts SET balance = balance + 100\nWHERE account_id = 2;\nCOMMIT;","","A transaction groups operations into one logical unit. ACID means Atomicity, Consistency, Isolation and Durability. If one transfer step fails, the transaction should roll back rather than leave money removed from one account but not added to the other."],
+["DBMS","Advanced","Indexes and query performance","Trade storage and write cost for faster reads","CREATE INDEX idx_employee_dept\nON employees(department_id);\n\nEXPLAIN\nSELECT * FROM employees\nWHERE department_id = 10;","","An index is an auxiliary data structure that helps locate rows without scanning the entire table. B-tree indexes commonly support equality and range predicates. Indexes consume storage and add write overhead, so create them for real access patterns and validate with execution plans."],
+["DBMS","Advanced","Concurrency, locks and isolation","Many users, one consistent database","Transaction A reads stock = 5\nTransaction B reads stock = 5\nBoth try to sell 4 units.\n\nConcurrency control prevents\nboth from blindly overwriting each other.","","Concurrency control coordinates simultaneous transactions. Locks, multiversion concurrency control (MVCC), isolation levels and conflict detection help prevent anomalies such as lost updates, dirty reads and inconsistent reads. Exact behavior differs by DBMS."],
+["DBMS","Advanced","Backup, recovery and durability","Plan for failure before it happens","Full backup + incremental backups\nTransaction log / WAL\nRestore test\nRecovery time objective (RTO)\nRecovery point objective (RPO)","","Backups protect against loss, while transaction logs help recover to a point in time. RTO is how quickly service must return; RPO is how much data loss is tolerable. A backup strategy is incomplete until restore procedures are tested."],
+["DBMS","Advanced","OLTP vs OLAP","Operational systems and analytical systems","OLTP:\n• Many short transactions\n• Current operational records\n• Frequent inserts and updates\n\nOLAP:\n• Large analytical queries\n• Historical data\n• Aggregations and scans","","Online Transaction Processing (OLTP) systems support day-to-day operations such as payments and orders. Online Analytical Processing (OLAP) systems support reporting and analysis across large datasets. Their schemas, storage and performance goals often differ."],
+["DBMS","Advanced","Distributed databases and replication","Data across machines","Replication → copies data to other nodes\nSharding    → splits data across nodes\nPartitioning→ divides a logical dataset\n\nEach solves a different scaling problem.","","Replication maintains copies for availability or read scaling. Sharding distributes different subsets of data across machines. Partitioning divides a dataset into manageable pieces and may occur within one database. Distributed systems add network failures and consistency trade-offs."]
 ];
 const ORD=["Course map","Data, DBMS and RDBMS","What is SQL?","SQL vs MySQL vs SQL Server","Why do we use SQL?","Tables, rows and columns","Databases and schemas","Data types","Primary and foreign keys","Relationships and ER diagrams","The five families of SQL",
 "SELECT","DISTINCT","WHERE","Comparison, NOT and aliases","AND, OR","IN and BETWEEN","LIKE","IS NULL","ORDER BY and LIMIT","How a query is read",
