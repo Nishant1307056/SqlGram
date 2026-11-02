@@ -112,7 +112,7 @@ function recordAttempt(challenge,isCorrect){
 }
 function renderDashboard(){
  const m=practiceMetrics,accuracy=m.attempts?Math.round(m.correct/m.attempts*100):0;
- const cards=[["Questions attempted",m.attempts],["Correct answers",m.correct],["Incorrect attempts",m.incorrect],["Overall accuracy",accuracy+"%"]];
+ const cards=[["Query attempts",m.attempts],["Unique questions",m.uniqueQuestions.length],["Correct answers",m.correct],["Overall accuracy",accuracy+"%"]];
  $("sqlMetricGrid").innerHTML=cards.map(([label,value])=>"<div class='sqlMetric'><span>"+label+"</span><strong>"+value+"</strong></div>").join("");
  $("sqlLevelProgress").innerHTML=["Easy","Intermediate","Hard"].map(level=>{const x=m.byLevel[level],pct=x.attempts?Math.round(x.correct/x.attempts*100):0;return "<div class='sqlLevelRow'><div><strong>"+level+"</strong><span>"+x.correct+" / "+x.attempts+" correct · "+pct+"%</span></div><div class='sqlProgressTrack'><i style='width:"+pct+"%'></i></div></div>";}).join("");
  const weak=Object.entries(m.byConcept).filter(([,x])=>x.attempts>=2).sort((a,b)=>(a[1].correct/a[1].attempts)-(b[1].correct/b[1].attempts)).slice(0,4);
