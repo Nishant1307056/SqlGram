@@ -739,8 +739,6 @@ WHERE rn = 1;`,"","Keep one row per business key with ROW_NUMBER. Add checks for
   ["DBMS","Advanced","OLTP vs OLAP","Operational systems and analytical systems","OLTP:\n• Many short transactions\n• Current operational records\n• Frequent inserts and updates\n\nOLAP:\n• Large analytical queries\n• Historical data\n• Aggregations and scans","","Online Transaction Processing (OLTP) systems support day-to-day operations such as payments and orders. Online Analytical Processing (OLAP) systems support reporting and analysis across large datasets. Their schemas, storage and performance goals often differ."],
   ["DBMS","Advanced","Distributed databases and replication","Data across machines","Replication → copies data to other nodes\nSharding    → splits data across nodes\nPartitioning→ divides a logical dataset\n\nEach solves a different scaling problem.","","Replication maintains copies for availability or read scaling. Sharding distributes different subsets of data across machines. Partitioning divides a dataset into manageable pieces and may occur within one database. Distributed systems add network failures and consistency trade-offs."]
 ];
-const MAP={"What is SQL?":1,"Why do we use SQL?":1,"Tables, rows and columns":1,"Data types":1,"Primary and foreign keys":1,"The five families of SQL":1,"How a query is read":2,SELECT:2,DISTINCT:2,"ORDER BY and LIMIT":2,WHERE:2,"AND, OR":2,LIKE:2,"IN and BETWEEN":2,"IS NULL":2,COALESCE:3,"CASE WHEN":3,"Dates and strings":3,"JSON in SQL":3,"COUNT, SUM, AVG":4,"GROUP BY":4,HAVING:4,ROLLUP:4,"INNER JOIN":5,"LEFT JOIN":5,"Self join":5,"FULL, RIGHT, CROSS":5,"CTE (WITH)":6,"Subquery and EXISTS":6,"Recursive CTE":6,UNION:7,"Window functions":8,"LAG and running totals":8,"Window frames":8,UPDATE:9,"INSERT and DELETE":9,"MERGE (upsert)":9,"CREATE TABLE":10,"ALTER, DROP, TRUNCATE":10,Constraints:11,Normalization:12,"Data warehouse design":12,"Transactions and ACID":13,"Isolation levels and locks":13,Views:14,"Procedures and functions":14,Triggers:14,"Index types":14,Clustering:14,Security:14,"Indexes and EXPLAIN":15,Partitioning:15,"Sharding and replication":15,"Execution plans":15};
-P.forEach(p=>{const n=MAP[p[2]]||(typeof p[0]=="number"&&p[0]);if(n)p[0]=M[n-1]});
 const ORD=["Course map","Data, DBMS and RDBMS","What is SQL?","SQL vs MySQL vs SQL Server","Why do we use SQL?","Tables, rows and columns","Databases and schemas","Data types","Primary and foreign keys","Relationships and ER diagrams","The five families of SQL",
 "SELECT","DISTINCT","WHERE","Comparison, NOT and aliases","AND, OR","IN and BETWEEN","LIKE","IS NULL","ORDER BY and LIMIT","How a query is read",
 "String functions","Numeric and date functions","Dates and strings","CAST and NULL helpers","COALESCE","CASE WHEN","JSON in SQL",
@@ -970,7 +968,7 @@ onAuthStateChanged(auth, async user => {
     console.error(e);
   }
 });
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js?v=5", {updateViaCache:"none"}).then(r=>r.update()).catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js?v=6", {updateViaCache:"none"}).then(r=>r.update()).catch(() => {});
 </script>
 <script src="curriculum.js?v=2" defer></script>
 <script src="curriculum-lessons.js?v=1" defer></script>
