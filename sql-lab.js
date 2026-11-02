@@ -175,35 +175,15 @@ function shuffle(items){
  return a;
 }
 function nextChallenge(level){
- const choices=challengePool.filter(c=>c.level===level);
- if(!choices.length)return;
- let deck=questionDecks[level];
- if(!deck.length){
-  let unseen=choices.filter(c=>!seenQuestionIds[level].has(c.id));
-  if(!unseen.length){
-   seenQuestionIds[level].clear();
-   unseen=choices;
-   persistLocalHistory();
-   if(window.__sqlGramPracticeHistory){
-    const reset=practicePayload();
-    historySaveQueue=historySaveQueue.then(()=>window.__sqlGramPracticeHistory.save(reset)).catch(e=>console.warn("Could not sync SQL question cycle.",e));
-   }
-  }
-  deck=shuffle(unseen);
-  questionDecks[level]=deck;
- }
- const pick=questionDecks[level].pop();
- lastQuestionByLevel[level]=pick.id;
- activeQuestionRecorded=false;
- activeChallenge=pick;
- expectedResult=db.exec(pick.solution);
- const total=choices.length,seen=seenQuestionIds[level].size;
- $("sqlChallenge").innerHTML="<strong>"+level+" challenge · "+seen+" of "+total+" in this cycle</strong><p>"+escapeHtml(pick.prompt)+"</p>";
- $("sqlEditor").value="";
- $("sqlResults").innerHTML="<p class='sqlIntro'>Run a query to inspect the result.</p>";
- $("sqlStatus").className="sqlStatus";
- $("sqlStatus").textContent="Fresh question selected. Practised questions are remembered across devices when signed in.";
- updateStats();
+ const concept=$("sqlConcept")?.value||"";
+ const choices=challengePool.filter(c=>c.level===level&&(!concept||(conceptByQuestion[c.id]||"Other")===concept));
+ if(!choices.length){$("sqlChallenge").textContent="No questions available for this concept and level.";return;}
+ let deck=questionDecks[level].filter(c=>choices.some(x=>x.id===c.id));
+ if(!deck.length){let unseen=choices.filter(c=>!seenQuestionIds[level].has(c.id));if(!unseen.length){seenQuestionIds[level].clear();unseen=choices;persistLocalHistory();}deck=shuffle(unseen);}
+ const pick=deck.pop();questionDecks[level]=deck;lastQuestionByLevel[level]=pick.id;activeQuestionRecorded=false;activeChallenge=pick;expectedResult=db.exec(pick.solution);hintStep=0;$("sqlHintBox").hidden=true;
+ const seen=seenQuestionIds[level].size;
+ $("sqlChallenge").innerHTML="<strong>"+level+" · "+(conceptByQuestion[pick.id]||"SQL")+"</strong><p>"+escapeHtml(pick.prompt)+"</p>";
+ $("sqlEditor").value="";$("sqlResults").innerHTML="<p class='sqlIntro'>Run a query to inspect the result.</p>";$("sqlStatus").className="sqlStatus";$("sqlStatus").textContent="Fresh question selected. Use progressive hints if needed.";updateStats();
 }
 function getDone(){const k="sqlgram-practice-"+(localStorage.getItem("uid")||"guest");return new Set(JSON.parse(localStorage.getItem(k)||"[]"));}
 function saveDone(done){const k="sqlgram-practice-"+(localStorage.getItem("uid")||"guest");localStorage.setItem(k,JSON.stringify([...done]));}
