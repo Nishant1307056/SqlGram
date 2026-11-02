@@ -72,7 +72,7 @@ let lastGeneratedKey="";
 const questionDecks={Easy:[],Intermediate:[],Hard:[]};
 const lastQuestionByLevel={Easy:null,Intermediate:null,Hard:null};
 const seenQuestionIds={Easy:new Set(),Intermediate:new Set(),Hard:new Set()};
-let historyReady=false, historySaveQueue=Promise.resolve();
+let historyReady=false, historySaveQueue=Promise.resolve(), activeQuestionRecorded=false;
 function historyStorageKey(){return "sqlgram-practice-history-"+(localStorage.getItem("uid")||"guest");}
 function localHistory(){
  try{return JSON.parse(localStorage.getItem(historyStorageKey())||"{}");}catch(e){return {};}
@@ -132,9 +132,9 @@ function nextChallenge(level){
  }
  const pick=questionDecks[level].pop();
  lastQuestionByLevel[level]=pick.id;
+ activeQuestionRecorded=false;
  activeChallenge=pick;
  expectedResult=db.exec(pick.solution);
- recordQuestion(level,pick.id);
  const total=choices.length,seen=seenQuestionIds[level].size;
  $("sqlChallenge").innerHTML="<strong>"+level+" challenge · "+seen+" of "+total+" in this cycle</strong><p>"+escapeHtml(pick.prompt)+"</p>";
  $("sqlEditor").value="";
@@ -161,6 +161,7 @@ function validateCurrentQuery(){
  try{
   const q=$("sqlEditor").value.trim();if(!q)throw Error("Write a SQL query first.");
   const result=db.exec(q);runs++;renderResults(result);
+  if(!activeQuestionRecorded&&activeChallenge){recordQuestion(activeChallenge.level,activeChallenge.id);activeQuestionRecorded=true;const total=challengePool.filter(c=>c.level===activeChallenge.level).length;$("sqlChallenge").querySelector("strong").textContent=activeChallenge.level+" challenge · "+seenQuestionIds[activeChallenge.level].size+" of "+total+" in this cycle";}
   if(matchesExpected(result)){completedCount++;setFeedback("correct","✓ CORRECT — Your output matches this challenge.");}
   else{setFeedback("incorrect","✕ INCORRECT — Query executed, but the output does not match the expected answer. Your results are shown below.");}
   updateStats();
