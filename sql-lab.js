@@ -126,6 +126,7 @@ function renderDashboard(){
  const weak=Object.entries(m.byConcept).filter(([,x])=>x.attempts>=2).sort((a,b)=>(a[1].correct/a[1].attempts)-(b[1].correct/b[1].attempts)).slice(0,4);
  $("sqlWeakConcepts").innerHTML=weak.length?weak.map(([name,x])=>"<div class='sqlMiniRow'><span>"+escapeHtml(name)+"</span><strong>"+Math.round(x.correct/x.attempts*100)+"% accuracy</strong></div>").join(""):"<p class='sqlIntro'>Concept insights will appear after you practise a few questions.</p>";
  $("sqlRecentActivity").innerHTML=m.recent.length?m.recent.slice(0,5).map(x=>"<div class='sqlMiniRow'><span>"+escapeHtml(x.level+" · "+x.concept)+"</span><strong class='"+(x.correct?"sqlGood":"sqlBad")+"'>"+(x.correct?"Correct":"Incorrect")+"</strong></div>").join(""):"<p class='sqlIntro'>Your recent attempts will appear here.</p>";
+ renderGamification();
 }
 
 function historyStorageKey(){return "sqlgram-practice-history-"+(localStorage.getItem("uid")||"guest");}
@@ -277,7 +278,7 @@ function init(){
  $("sqlSave").onclick=saveQuery;
  $("sqlReset").onclick=()=>{setupDb();questionDecks.Easy=[];questionDecks.Intermediate=[];questionDecks.Hard=[];nextChallenge(level.value);$("sqlStatus").textContent="Employee, department and location sample data reset.";};
  $("sqlSaved").onclick=e=>{const b=e.target.closest("[data-query]");if(!b)return;const key="sqlgram-queries-"+(localStorage.getItem("uid")||"guest");const items=JSON.parse(localStorage.getItem(key)||"[]");$("sqlEditor").value=items[Number(b.dataset.query)]?.sql||"";};
- setupDb();loadPracticeHistory().then(()=>nextChallenge("Easy"));renderSaved();renderDashboard();
+ setupDb();loadCustomQuestions();loadPracticeHistory().then(()=>nextChallenge("Easy"));renderSaved();renderDashboard();
  window.__openSqlLab=openLab;
 }
 function loadEngine(){
