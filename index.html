@@ -49,17 +49,23 @@ summary{margin:6px 12px;padding:10px 14px;border:1px solid var(--c);color:var(--
 .gbtn,.pbtn{padding:14px;border-radius:12px;border:1px solid var(--line);font:600 16px inherit;font-family:inherit;cursor:pointer}
 .gbtn{background:var(--card);color:var(--ink)}.pbtn{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .lnk{background:none;border:0;color:var(--mute);font:500 13px inherit;font-family:inherit;cursor:pointer;text-decoration:underline}
-#err{color:#d33;min-height:1.2em;font-size:14px}
+#err{color:#d33;min-height:1.2em;font-size:14px}.ab .or{margin:2px 0}.ab button:disabled{opacity:.55}.acts button[data-a=d]{font-size:13px}.acts button[data-a=d].on{color:#2a9d3f;font-weight:700}
 </style></head><body>
 <div class="app">
 <header><h1>Learning SQL from Scratch</h1><span><span id="count"></span> <button class="lnk" id="out">Sign out</button></span></header>
 <nav class="chips" id="chips" aria-label="Topics"></nav>
 <main id="feed" tabindex="0"></main>
 </div>
-<div id="auth" hidden><div class="ab"><h1>Learning SQL from Scratch</h1><p>Learn SQL one swipe at a time. Free, no account needed.</p>
-<button class="pbtn" id="guest">Start learning</button>
-<button class="gbtn" id="g" hidden>Sign in with Google to keep your likes</button>
-<p id="err" role="alert"></p></div></div>
+<div id="auth"><div class="ab">
+<h1>SqlGram</h1><p>Sign in to access lessons and sync your learning across devices.</p>
+<button class="gbtn" id="g">Continue with Google</button>
+<div class="or">or use email</div>
+<input id="email" type="email" autocomplete="email" placeholder="Email address">
+<input id="password" type="password" autocomplete="current-password" placeholder="Password (at least 6 characters)">
+<button class="pbtn" id="emailAction">Sign in with email</button>
+<button class="lnk" id="toggleAuth">New here? Create an account</button>
+<p id="err" role="alert"></p>
+</div></div>
 <script>
 const M=["1 Intro","2 Queries","3 Functions","4 Aggregates","5 Joins","6 Subqueries","7 Set ops","8 Windows","9 DML","10 DDL","11 Keys","12 Design","13 Transactions","14 Objects","15 Performance","16 Data eng"];const COL={};M.forEach((m,i)=>COL[m]=`hsl(${i*22+200},62%,46%)`);COL.Practice="#2a9d3f";
 const P=[
@@ -619,20 +625,20 @@ const ORD=["Course map","Data, DBMS and RDBMS","What is SQL?","SQL vs MySQL vs S
 const rk=t=>{const i=ORD.indexOf(t);return i<0?999:i};
 const KW=/\b(SELECT|DISTINCT|FROM|WHERE|AND|OR|IN|BETWEEN|LIKE|IS|NOT|NULL|ORDER BY|GROUP BY|HAVING|LIMIT|DESC|ASC|JOIN|LEFT JOIN|ON|AS|UPDATE|SET|CASE|WHEN|THEN|ELSE|END|WITH|OVER|PARTITION BY|COUNT|SUM|AVG|RANK|DENSE_RANK|ROW_NUMBER|LAG|MAX|MIN|DELETE|INSERT|INTO|VALUES|CREATE|TABLE|PRIMARY|KEY|UNION|ALL|FULL|OUTER|EXISTS|INDEX|EXPLAIN|OFFSET|INTERVAL|DAY|INT|VARCHAR|BEGIN|COMMIT|ROLLBACK|GRANT|REVOKE|TO|ALTER|ADD|COLUMN|DROP|TRUNCATE|VIEW|UNIQUE|CHECK|DEFAULT|REFERENCES|FOREIGN|RECURSIVE|ROWS|UNBOUNDED|PRECEDING|CURRENT|ROW|ROLLUP|MERGE|USING|MATCHED|PROCEDURE|TRIGGER|FOR|EACH|AFTER|CLUSTER|RANGE|MATERIALIZED|TRANSACTION|ISOLATION|LEVEL|DECIMAL|COALESCE)\b/g;
 const hl=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/('[^']*')|(--.*)|\b(\d+)\b|\b(LEFT JOIN|ORDER BY|GROUP BY|PARTITION BY|[A-Z_]+)\b/g,(m,a,b,c,d)=>a?`<span class=s>${a}</span>`:b?`<span class=c>${b}</span>`:c?`<span class=n>${c}</span>`:(d&&new RegExp("^("+KW.source.slice(3,-3)+")$").test(d))?`<span class=k>${d}</span>`:m);
-const K=localStorage.getItem("uid")||"";let liked=new Set(),saved=new Set(),filter="All";
-try{liked=new Set(JSON.parse(localStorage.getItem("l"+K)||"[]"));saved=new Set(JSON.parse(localStorage.getItem("s"+K)||"[]"))}catch(e){}
-const store=()=>{try{localStorage.setItem("l"+K,JSON.stringify([...liked]));localStorage.setItem("s"+K,JSON.stringify([...saved]))}catch(e){}};
+const K=localStorage.getItem("uid")||"";let liked=new Set(),saved=new Set(),completed=new Set(),filter="All";
+try{liked=new Set(JSON.parse(localStorage.getItem("l"+K)||"[]"));saved=new Set(JSON.parse(localStorage.getItem("s"+K)||"[]"));completed=new Set(JSON.parse(localStorage.getItem("d"+K)||"[]"))}catch(e){}
+const store=()=>{try{localStorage.setItem("l"+K,JSON.stringify([...liked]));localStorage.setItem("s"+K,JSON.stringify([...saved]));localStorage.setItem("d"+K,JSON.stringify([...completed]));if(window.__syncSqlGram)window.__syncSqlGram()}catch(e){}};
 const ic={h:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.600-7 10-7 10z"/></svg>',b:'<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>',c:'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>'};
 const feed=document.getElementById("feed"),count=document.getElementById("count");
 function table(r,l){if(!r)return"";if(r.includes("#"))return r.split("#").map(x=>table(x,l)).join("");if(r.includes("~"))[l,r]=r.split("~");const rows=r.split(";").map(x=>x.split("|"));return`<div class=res><small>${l||"Result"}</small><table><tr>${rows[0].map(h=>`<th>${h}</th>`).join("")}</tr>${rows.slice(1).map(x=>`<tr>${x.map(v=>`<td>${v}</td>`).join("")}</tr>`).join("")}</table></div>`}
 function render(){
- const list=P.map((p,i)=>({p,i})).filter(({p,i})=>filter==="All"||(filter==="Saved"?saved.has(i):p[0]===filter)).sort((a,b)=>Object.keys(COL).indexOf(a.p[0])-Object.keys(COL).indexOf(b.p[0])||rk(a.p[2])-rk(b.p[2]));
+ const list=P.map((p,i)=>({p,i})).filter(({p,i})=>filter==="All"||(filter==="Saved"?saved.has(i):filter==="Liked"?liked.has(i):filter==="Completed"?completed.has(i):p[0]===filter)).sort((a,b)=>Object.keys(COL).indexOf(a.p[0])-Object.keys(COL).indexOf(b.p[0])||rk(a.p[2])-rk(b.p[2]));
  feed.innerHTML=list.length?list.map(({p,i},n)=>`<section class=post data-i="${i}"><article class=card style="--c:${COL[p[0]]}">
  <div class=who><div class=av>${p[0].slice(0,2).trim()}</div><div><b>${p[0]}</b><span>${p[1]}</span></div></div>
  <h2>${p[2]}</h2><p class=tag>${p[3]}</p>
  ${p[7]?table(p[5],"Sample data")+'<details><summary>Show solution</summary>':''}${p[4]?'<pre><code>'+hl(p[4])+'</code></pre>':''}${p[7]?'':table(p[5])}
  <p class=why>${p[6]}</p>${p[7]?'</details>':''}
- <div class=acts><button data-a=l class="${liked.has(i)?"on":""}" aria-label="Like">${ic.h}</button><button data-a=s class="${saved.has(i)?"on":""}" aria-label="Save">${ic.b}</button>${p[4]?'<button data-a=c aria-label="Copy query">'+ic.c+'<span></span></button>':''}</div>
+ <div class=acts><button data-a=l class="${liked.has(i)?"on":""}" aria-label="Like">${ic.h}</button><button data-a=s class="${saved.has(i)?"on":""}" aria-label="Save">${ic.b}</button><button data-a=d class="${completed.has(i)?"on":""}" aria-label="Mark complete">✓ <span>${completed.has(i)?"Completed":"Complete"}</span></button>${p[4]?'<button data-a=c aria-label="Copy query">'+ic.c+'<span></span></button>':''}</div>
  ${n===0?'<p class=hint>Scroll for the next lesson</p>':""}</article></section>`).join(""):`<p class=empty>Nothing saved yet. Tap the bookmark on a lesson to keep it here.</p>`;
  feed.scrollTop=0;upd();
 }
@@ -641,29 +647,130 @@ feed.addEventListener("scroll",upd);
 feed.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const i=+b.closest(".post").dataset.i,a=b.dataset.a;
  if(a==="l"){liked.has(i)?liked.delete(i):liked.add(i);b.classList.toggle("on")}
  if(a==="s"){saved.has(i)?saved.delete(i):saved.add(i);b.classList.toggle("on")}
+ if(a==="d"){completed.has(i)?completed.delete(i):completed.add(i);b.classList.toggle("on");b.querySelector("span").textContent=completed.has(i)?"Completed":"Complete"}
  if(a==="c"){try{navigator.clipboard.writeText(P[i][4]);b.querySelector("span").textContent="Copied";setTimeout(()=>b.querySelector("span").textContent="",1200)}catch(x){}}
  store()});
 feed.addEventListener("dblclick",e=>{const p=e.target.closest(".post");if(!p)return;const i=+p.dataset.i;liked.add(i);p.querySelector("[data-a=l]").classList.add("on");store()});
 const chips=document.getElementById("chips");
-["All",...Object.keys(COL),"Saved"].forEach(t=>{const b=document.createElement("button");b.className="chip";b.textContent=t;b.setAttribute("aria-pressed",t===filter);b.onclick=()=>{filter=t;chips.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));render()};chips.append(b)});
+["All",...Object.keys(COL),"Liked","Saved","Completed"].forEach(t=>{const b=document.createElement("button");b.className="chip";b.textContent=t;b.setAttribute("aria-pressed",t===filter);b.onclick=()=>{filter=t;chips.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));render()};chips.append(b)});
 render();
-</script><script>
-(()=>{
-const FB={apiKey:"",authDomain:"",projectId:"",appId:""}; // optional: paste your free Firebase web config
-const $=id=>document.getElementById(id);
-const done=u=>{localStorage.setItem("uid",u);location.reload()};
-const err=m=>{$("err").textContent=m||""};
-if(!localStorage.getItem("uid"))$("auth").hidden=false;
-if(FB.apiKey)$("g").hidden=false;
-$("guest").onclick=()=>done("guest");
-$("out").onclick=async()=>{try{if(window.__fb)await window.__fb.signOut(window.__au)}catch(e){}localStorage.removeItem("uid");location.reload()};
-$("g").onclick=async()=>{err();
- try{const V="10.12.2",B="https://www.gstatic.com/firebasejs/"+V+"/";
-  const [A,F]=await Promise.all([import(B+"firebase-app.js"),import(B+"firebase-auth.js")]);
-  const au=F.getAuth(A.initializeApp(FB));window.__fb=F;window.__au=au;
-  const r=await F.signInWithPopup(au,new F.GoogleAuthProvider());done(r.user.uid)}
- catch(e){err("Google sign-in didn\u2019t finish. Check your connection and try again.")}};
-if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
-})();
+</script><script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA8ctdblS-lVuj0lmRYDp5Z1AZW9Aj0KDM",
+  authDomain: "sqlgram-9d2aa.firebaseapp.com",
+  projectId: "sqlgram-9d2aa",
+  storageBucket: "sqlgram-9d2aa.firebasestorage.app",
+  messagingSenderId: "470914707091",
+  appId: "1:470914707091:web:2ce4d61c55359c385a2766"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const $ = id => document.getElementById(id);
+let creatingAccount = false;
+let syncing = false;
+
+function showError(message) { $("err").textContent = message || ""; }
+function setAuthMode() {
+  $("emailAction").textContent = creatingAccount ? "Create account" : "Sign in with email";
+  $("password").autocomplete = creatingAccount ? "new-password" : "current-password";
+  $("toggleAuth").textContent = creatingAccount ? "Already have an account? Sign in" : "New here? Create an account";
+  showError("");
+}
+$("toggleAuth").addEventListener("click", () => { creatingAccount = !creatingAccount; setAuthMode(); });
+$("emailAction").addEventListener("click", async () => {
+  showError("");
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  if (!email || !password) return showError("Enter your email address and password.");
+  if (password.length < 6) return showError("Your password must contain at least 6 characters.");
+  $("emailAction").disabled = true;
+  try {
+    if (creatingAccount) await createUserWithEmailAndPassword(auth, email, password);
+    else await signInWithEmailAndPassword(auth, email, password);
+  } catch (e) {
+    const messages = {
+      "auth/email-already-in-use":"An account already exists with this email. Sign in instead.",
+      "auth/invalid-email":"Enter a valid email address.",
+      "auth/invalid-credential":"Email or password is incorrect.",
+      "auth/weak-password":"Choose a stronger password (at least 6 characters).",
+      "auth/network-request-failed":"Network error. Check your connection and try again."
+    };
+    showError(messages[e.code] || e.message || "Could not complete sign-in.");
+  } finally { $("emailAction").disabled = false; }
+});
+$("g").addEventListener("click", async () => {
+  showError("");
+  $("g").disabled = true;
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+  catch (e) {
+    const messages = {
+      "auth/popup-closed-by-user":"The sign-in window was closed before completion.",
+      "auth/unauthorized-domain":"This website domain is not yet authorized in Firebase Authentication.",
+      "auth/account-exists-with-different-credential":"An account already exists with this email using another sign-in method."
+    };
+    showError(messages[e.code] || e.message || "Google sign-in failed.");
+  } finally { $("g").disabled = false; }
+});
+$("out").addEventListener("click", async () => { await signOut(auth); });
+
+window.__syncSqlGram = async () => {
+  const user = auth.currentUser;
+  if (!user || syncing) return;
+  syncing = true;
+  try {
+    const key = user.uid;
+    await setDoc(doc(db, "users", key), {
+      liked: JSON.parse(localStorage.getItem("l"+key) || "[]"),
+      saved: JSON.parse(localStorage.getItem("s"+key) || "[]"),
+      completed: JSON.parse(localStorage.getItem("d"+key) || "[]"),
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  } catch (e) { console.error("SqlGram sync failed", e); }
+  finally { syncing = false; }
+};
+
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    localStorage.removeItem("uid");
+    $("auth").hidden = false;
+    $("out").hidden = true;
+    return;
+  }
+  const previousUid = localStorage.getItem("uid");
+  if (previousUid !== user.uid) {
+    localStorage.removeItem("l"+previousUid);
+    localStorage.removeItem("s"+previousUid);
+    localStorage.removeItem("d"+previousUid);
+  }
+  localStorage.setItem("uid", user.uid);
+  $("auth").hidden = true;
+  $("out").hidden = false;
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    const data = snap.exists() ? snap.data() : {};
+    const values = [
+      ["l", Array.isArray(data.liked) ? data.liked : []],
+      ["s", Array.isArray(data.saved) ? data.saved : []],
+      ["d", Array.isArray(data.completed) ? data.completed : []]
+    ];
+    let changed = previousUid !== user.uid;
+    for (const [prefix, value] of values) {
+      const next = JSON.stringify(value);
+      if (localStorage.getItem(prefix+user.uid) !== next) changed = true;
+      localStorage.setItem(prefix+user.uid, next);
+    }
+    if (changed) location.reload();
+    else if (!snap.exists()) window.__syncSqlGram();
+  } catch (e) {
+    showError("Signed in, but your learning data could not be loaded. Check Firestore security rules.");
+    console.error(e);
+  }
+});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
 </body></html>
