@@ -4,3 +4,9 @@
 #sqlEditor{width:100%;min-height:190px;resize:vertical;background:#12141d;color:#e6e8f2;border:0;border-radius:10px;padding:14px;font:14px/1.6 "JetBrains Mono",monospace;tab-size:2}
 .sqlToolbar{display:flex;gap:8px;flex-wrap:wrap}.sqlAction.primary{background:#3b6cf6;color:white;border-color:#3b6cf6}.sqlStatus{font-size:13px;color:var(--mute);min-height:1.2em}.sqlResults{overflow:auto;max-height:300px}.sqlResults table{min-width:100%;width:max-content}.sqlResults td,.sqlResults th{padding:7px 10px}.sqlPrompt{font-size:14px;line-height:1.5}.sqlPrompt p{color:var(--mute);margin-top:4px}.sqlStats{font-size:12px;color:var(--mute)}.sqlSaved{display:flex;gap:7px;flex-wrap:wrap}.sqlSaved button{font-size:12px}
 @media(min-width:720px){#sqlLab{padding:22px}.sqlGrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.sqlWide{grid-column:1/-1}}
+
+/* Prominent challenge validation feedback */
+.sqlStatus.sqlFeedback{display:block;padding:13px 15px;border-radius:11px;border:1px solid;font-size:15px;font-weight:800;line-height:1.45;min-height:0;letter-spacing:.01em}
+.sqlStatus.sqlFeedback.correct{color:#16a34a;background:rgba(22,163,74,.13);border-color:rgba(22,163,74,.55)}
+.sqlStatus.sqlFeedback.incorrect{color:#ef4444;background:rgba(239,68,68,.13);border-color:rgba(239,68,68,.6)}
+.sqlStatus.sqlFeedback.error{color:#f59e0b;background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.6)}
