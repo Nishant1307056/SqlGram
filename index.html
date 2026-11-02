@@ -79,6 +79,28 @@ header{gap:8px}header h1{flex:1;padding-left:12px}
 .profileStats button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:12px 4px;display:grid;gap:4px;cursor:pointer}
 .profileStats strong{font-size:22px}.profileStats span{font-size:12px;color:var(--mute)}
 #profileMsg{font-size:13px;color:#2a9d3f;min-height:1em}.ab .or{margin:2px 0}.ab button:disabled{opacity:.55}.acts button[data-a=d]{font-size:13px}.acts button[data-a=d].on{color:#2a9d3f;font-weight:700}
+
+#curriculumPanel{position:fixed;inset:0;z-index:46;background:var(--bg);color:var(--ink);overflow:auto;padding:18px;display:block}
+#curriculumPanel[hidden]{display:none!important}
+.curHead{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;max-width:900px;margin:0 auto 18px}
+.curEyebrow{font-size:11px;letter-spacing:.13em;color:#3b6cf6;font-weight:800;margin-bottom:6px}
+.curHead h2{font-size:25px;line-height:1.15;letter-spacing:-.03em}.curSub{color:var(--mute);font-size:14px;margin-top:7px;line-height:1.5}
+.curClose,.curTools button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 12px;border-radius:10px;font:inherit;white-space:nowrap;cursor:pointer}
+.curProgress,.curTools,.curModules,.curFoot{max-width:900px;margin-left:auto;margin-right:auto}
+.curProgress{background:var(--card);border:1px solid var(--line);padding:14px;border-radius:13px;margin-bottom:12px}
+.curProgressLine{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:9px}
+.curTrack{height:9px;background:var(--line);border-radius:20px;overflow:hidden}.curTrack i{display:block;height:100%;background:#16a34a;border-radius:20px}
+.curTools{display:flex;gap:8px;margin-bottom:12px}.curTools input{min-width:0;flex:1;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
+.curModules{display:grid;gap:9px}.curModule{border:1px solid var(--line);border-radius:13px;background:var(--card);overflow:hidden}
+.curModule>summary{list-style:none;display:flex;align-items:center;gap:11px;padding:14px;cursor:pointer;margin:0;border:0;color:var(--ink)}
+.curModule>summary::-webkit-details-marker{display:none}.curNum{font:700 12px "JetBrains Mono",monospace;color:#3b6cf6;background:rgba(59,108,246,.1);padding:7px;border-radius:8px}
+.curModuleName{flex:1;min-width:0}.curModuleName strong,.curModuleName small{display:block}.curModuleName strong{font-size:14px}.curModuleName small{font-size:11px;color:var(--mute);margin-top:3px}
+.curCount{font-size:12px;color:var(--mute);white-space:nowrap}.curChevron{color:var(--mute)}.curModule[open] .curChevron{transform:rotate(180deg)}
+.curBody{padding:0 14px 14px}.curBody>p{font-size:13px;line-height:1.55;color:var(--mute);padding:0 0 12px;border-bottom:1px solid var(--line)}
+.curTopicList{display:grid;gap:2px;padding-top:8px}.curTopic{display:flex;align-items:center;gap:9px;padding:9px 7px;border-radius:8px;cursor:pointer}.curTopic:hover{background:var(--bg)}.curTopic input{accent-color:#16a34a;width:17px;height:17px;flex:none}.curTopicText{font-size:13px;line-height:1.4;flex:1}.curTopicText b{font:600 10px "JetBrains Mono",monospace;color:var(--mute);margin-right:5px}.curTick{color:#16a34a;font-weight:800}.curTopic.isDone .curTopicText{color:var(--mute);text-decoration:line-through}
+.curFoot{font-size:12px;color:var(--mute);padding:16px 0 25px}
+@media(max-width:420px){#curriculumPanel{padding:13px}.curHead h2{font-size:21px}.curTools{flex-direction:column}.curTools button{width:100%}.curModule>summary{padding:11px;gap:8px}.curCount{font-size:11px}}
+
 </style></head><body>
 <div class="app">
 <header><button class="menuToggle" id="menuBtn" aria-label="Open navigation menu" aria-expanded="false">☰</button><h1>Learning SQL from Scratch</h1><span id="count"></span></header>
@@ -88,7 +110,7 @@ header{gap:8px}header h1{flex:1;padding-left:12px}
  <div class="drawerHead"><div class="drawerBrand">SqlGram</div><button class="drawerClose" id="closeDrawer" aria-label="Close menu">×</button></div>
  <div class="drawerUser"><div class="drawerAvatar" id="drawerAvatar">S</div><div><strong id="drawerName">Learner</strong><small id="drawerEmail"></small></div></div>
  <nav class="drawerNav">
-  <button data-menu="profile">♙ <span>Profile</span></button><button data-menu="practice">⌘ <span>SQL Practice Lab</span></button><div class="drawerDivider"></div>
+  <button data-menu="profile">♙ <span>Profile</span></button><button data-menu="curriculum">▤ <span>DBMS & SQL Learning Path</span></button><button data-menu="practice">⌘ <span>SQL Practice Lab</span></button><div class="drawerDivider"></div>
   <button data-menu="Liked">♥ <span>Liked lessons</span></button>
   <button data-menu="Saved">▮ <span>Saved lessons</span></button>
   <button data-menu="Completed">✓ <span>Completed lessons</span></button>
@@ -99,6 +121,7 @@ header{gap:8px}header h1{flex:1;padding-left:12px}
 </aside>
 <main id="feed" tabindex="0"></main>
 </div>
+<section id="curriculumPanel" hidden></section>
 <section id="profilePanel" hidden>
 <div class="profileCard">
 <div class="profileTop"><h2>Your profile</h2><button class="lnk" id="closeProfile">Close</button></div>
@@ -787,7 +810,7 @@ function refreshProfile() {
 function closeDrawer(){$("drawer").classList.remove("open");$("drawer").setAttribute("aria-hidden","true");$("drawerShade").hidden=true;$("menuBtn").setAttribute("aria-expanded","false");}
 $("menuBtn").addEventListener("click",()=>{refreshProfile();$("drawer").classList.add("open");$("drawer").setAttribute("aria-hidden","false");$("drawerShade").hidden=false;$("menuBtn").setAttribute("aria-expanded","true");});
 $("closeDrawer").addEventListener("click",closeDrawer);$("drawerShade").addEventListener("click",closeDrawer);
-document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",()=>{const a=b.dataset.menu;closeDrawer();if(a==="profile"){refreshProfile();$("profilePanel").hidden=false;}else if(a==="settings"){$("settingsPanel").hidden=false;}else if(a==="developer"){$("developerPanel").hidden=false;}else if(a==="practice"){if(window.__openSqlLab){window.__openSqlLab();}else{import("./sql-lab.js?v=22").then(()=>window.__openSqlLab?.()).catch(e=>{console.error("SQL Lab load failed",e);alert("SQL Practice Lab could not load. Please check your internet connection and try again.");});}}else window.__setSqlGramFilter(a);}));
+document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",()=>{const a=b.dataset.menu;closeDrawer();if(a==="profile"){refreshProfile();$("profilePanel").hidden=false;}else if(a==="curriculum"){if(window.__openCurriculum)window.__openCurriculum();else import("./curriculum.js?v=1").then(()=>window.__openCurriculum?.()).catch(e=>{console.error(e);alert("Learning path could not load.");});}else if(a==="settings"){$("settingsPanel").hidden=false;}else if(a==="developer"){$("developerPanel").hidden=false;}else if(a==="practice"){if(window.__openSqlLab){window.__openSqlLab();}else{import("./sql-lab.js?v=22").then(()=>window.__openSqlLab?.()).catch(e=>{console.error("SQL Lab load failed",e);alert("SQL Practice Lab could not load. Please check your internet connection and try again.");});}}else window.__setSqlGramFilter(a);}));
 $("closeSettings").addEventListener("click",()=>$("settingsPanel").hidden=true);
 $("closeDeveloper").addEventListener("click",()=>$("developerPanel").hidden=true);
 const savedTheme=localStorage.getItem("sqlgram-theme")||"system";$("themeChoice").value=savedTheme;
@@ -908,5 +931,6 @@ onAuthStateChanged(auth, async user => {
 });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js?v=5", {updateViaCache:"none"}).then(r=>r.update()).catch(() => {});
 </script>
+<script src="curriculum.js?v=1" defer></script>
 <script type="module" src="sql-lab.js?v=19"></script>
 </body></html>
