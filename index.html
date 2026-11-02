@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#3b6cf6"><link rel="icon" href="icon-192.png"><title>Learning SQL from Scratch</title>
+<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="sql-lab.css"><meta name="theme-color" content="#3b6cf6"><link rel="icon" href="icon-192.png"><title>Learning SQL from Scratch</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f1f2f7;--card:#fff;--ink:#151a2c;--mute:#6a7088;--line:#e1e3ec;--code:#12141d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -88,7 +88,7 @@ header{gap:8px}header h1{flex:1;padding-left:12px}
  <div class="drawerHead"><div class="drawerBrand">SqlGram</div><button class="drawerClose" id="closeDrawer" aria-label="Close menu">×</button></div>
  <div class="drawerUser"><div class="drawerAvatar" id="drawerAvatar">S</div><div><strong id="drawerName">Learner</strong><small id="drawerEmail"></small></div></div>
  <nav class="drawerNav">
-  <button data-menu="profile">♙ <span>Profile</span></button><div class="drawerDivider"></div>
+  <button data-menu="profile">♙ <span>Profile</span></button><button data-menu="practice">⌘ <span>SQL Practice Lab</span></button><div class="drawerDivider"></div>
   <button data-menu="Liked">♥ <span>Liked lessons</span></button>
   <button data-menu="Saved">▮ <span>Saved lessons</span></button>
   <button data-menu="Completed">✓ <span>Completed lessons</span></button>
@@ -767,7 +767,7 @@ function refreshProfile() {
 function closeDrawer(){$("drawer").classList.remove("open");$("drawer").setAttribute("aria-hidden","true");$("drawerShade").hidden=true;$("menuBtn").setAttribute("aria-expanded","false");}
 $("menuBtn").addEventListener("click",()=>{refreshProfile();$("drawer").classList.add("open");$("drawer").setAttribute("aria-hidden","false");$("drawerShade").hidden=false;$("menuBtn").setAttribute("aria-expanded","true");});
 $("closeDrawer").addEventListener("click",closeDrawer);$("drawerShade").addEventListener("click",closeDrawer);
-document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",()=>{const a=b.dataset.menu;closeDrawer();if(a==="profile"){refreshProfile();$("profilePanel").hidden=false;}else if(a==="settings"){$("settingsPanel").hidden=false;}else if(a==="developer"){$("developerPanel").hidden=false;}else window.__setSqlGramFilter(a);}));
+document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",()=>{const a=b.dataset.menu;closeDrawer();if(a==="profile"){refreshProfile();$("profilePanel").hidden=false;}else if(a==="settings"){$("settingsPanel").hidden=false;}else if(a==="developer"){$("developerPanel").hidden=false;}else if(a==="practice"){window.__openSqlLab?.();}else window.__setSqlGramFilter(a);}));
 $("closeSettings").addEventListener("click",()=>$("settingsPanel").hidden=true);
 $("closeDeveloper").addEventListener("click",()=>$("developerPanel").hidden=true);
 const savedTheme=localStorage.getItem("sqlgram-theme")||"system";$("themeChoice").value=savedTheme;
@@ -887,4 +887,5 @@ onAuthStateChanged(auth, async user => {
 });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js?v=5", {updateViaCache:"none"}).then(r=>r.update()).catch(() => {});
 </script>
+<script type="module" src="sql-lab.js"></script>
 </body></html>
