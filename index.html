@@ -51,6 +51,22 @@ summary{margin:6px 12px;padding:10px 14px;border:1px solid var(--c);color:var(--
 .lnk{background:none;border:0;color:var(--mute);font:500 13px inherit;font-family:inherit;cursor:pointer;text-decoration:underline}
 #err{color:#d33;min-height:1.2em;font-size:14px}
 #profilePanel{position:fixed;inset:0;z-index:40;background:var(--bg);padding:24px;overflow:auto;display:grid;place-items:center}
+#profilePanel[hidden],#settingsPanel[hidden]{display:none!important}
+#settingsPanel{position:fixed;inset:0;z-index:40;background:var(--bg);padding:24px;overflow:auto;display:grid;place-items:center}
+#themeChoice{padding:13px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+.menuToggle{width:40px;height:40px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-size:22px;cursor:pointer;flex:none}
+header{gap:8px}header h1{flex:1;padding-left:12px}
+.drawerShade{position:fixed;inset:0;background:#0009;z-index:60}
+.drawer{position:fixed;z-index:61;inset:0 auto 0 0;width:min(82vw,320px);background:var(--card);color:var(--ink);padding:20px 16px;display:flex;flex-direction:column;box-shadow:12px 0 40px #0003;transform:translateX(-105%);transition:transform .22s ease}
+.drawer.open{transform:translateX(0)}.drawerHead,.drawerUser{display:flex;align-items:center;justify-content:space-between}
+.drawerBrand{font-size:24px;font-weight:700}.drawerClose{border:0;background:none;color:var(--ink);font-size:30px;cursor:pointer}
+.drawerUser{justify-content:flex-start;gap:12px;padding:24px 4px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.drawerAvatar{width:44px;height:44px;border-radius:50%;background:#3b6cf6;color:white;display:grid;place-items:center;font-weight:700;font-size:20px}
+.drawerUser strong,.drawerUser small{display:block}.drawerUser small{font-size:12px;color:var(--mute);max-width:205px;overflow-wrap:anywhere;margin-top:3px}
+.drawerNav{display:grid;gap:4px}.drawerNav button,.drawerSignout{border:0;background:transparent;color:var(--ink);border-radius:11px;padding:13px 12px;text-align:left;font:500 16px inherit;font-family:inherit;display:flex;align-items:center;gap:14px;cursor:pointer}
+.drawerNav button:active,.drawerSignout:active{background:var(--bg)}.drawerNav button span,.drawerSignout span{font-size:15px}
+.drawerDivider{height:1px;background:var(--line);margin:8px 4px}.drawerSignout{margin-top:auto;color:#dc5555}
+@media(prefers-reduced-motion:reduce){.drawer{transition:none}}
 #profilePanel[hidden]{display:none!important}.profileCard{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;display:grid;gap:14px}
 .profileTop{display:flex;justify-content:space-between;align-items:center}.profileTop h2{font-size:23px}
 .profileAvatar{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:#3b6cf6;color:white;font-size:26px;font-weight:700}
@@ -63,8 +79,21 @@ summary{margin:6px 12px;padding:10px 14px;border:1px solid var(--c);color:var(--
 #profileMsg{font-size:13px;color:#2a9d3f;min-height:1em}.ab .or{margin:2px 0}.ab button:disabled{opacity:.55}.acts button[data-a=d]{font-size:13px}.acts button[data-a=d].on{color:#2a9d3f;font-weight:700}
 </style></head><body>
 <div class="app">
-<header><h1>Learning SQL from Scratch</h1><span><span id="count"></span> <button class="lnk" id="profileBtn">Profile</button> <button class="lnk" id="out">Sign out</button></span></header>
+<header><button class="menuToggle" id="menuBtn" aria-label="Open navigation menu" aria-expanded="false">☰</button><h1>Learning SQL from Scratch</h1><span id="count"></span></header>
 <nav class="chips" id="chips" aria-label="Topics"></nav>
+<div class="drawerShade" id="drawerShade" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Main navigation" aria-hidden="true">
+ <div class="drawerHead"><div class="drawerBrand">SqlGram</div><button class="drawerClose" id="closeDrawer" aria-label="Close menu">×</button></div>
+ <div class="drawerUser"><div class="drawerAvatar" id="drawerAvatar">S</div><div><strong id="drawerName">Learner</strong><small id="drawerEmail"></small></div></div>
+ <nav class="drawerNav">
+  <button data-menu="profile">♙ <span>Profile</span></button><div class="drawerDivider"></div>
+  <button data-menu="Liked">♥ <span>Liked lessons</span></button>
+  <button data-menu="Saved">▮ <span>Saved lessons</span></button>
+  <button data-menu="Completed">✓ <span>Completed lessons</span></button>
+  <div class="drawerDivider"></div><button data-menu="settings">⚙ <span>Settings</span></button>
+ </nav>
+ <button class="drawerSignout" id="out">↪ <span>Sign out</span></button>
+</aside>
 <main id="feed" tabindex="0"></main>
 </div>
 <section id="profilePanel" hidden>
@@ -82,6 +111,11 @@ summary{margin:6px 12px;padding:10px 14px;border:1px solid var(--c);color:var(--
 <button data-filter="Saved"><strong id="savedCount">0</strong><span>Saved</span></button>
 <button data-filter="Completed"><strong id="completedCount">0</strong><span>Completed</span></button>
 </div>
+</div></section>
+<section id="settingsPanel" hidden><div class="profileCard">
+ <div class="profileTop"><h2>Settings</h2><button class="lnk" id="closeSettings">Close</button></div>
+ <label for="themeChoice">Appearance</label><select id="themeChoice"><option value="system">Use device setting</option><option value="light">Light</option><option value="dark">Dark</option></select>
+ <p class="profileEmail">Choose how SqlGram looks on this device.</p>
 </div></section>
 <div id="auth"><div class="ab">
 <h1>SqlGram</h1><p>Sign in to access lessons and sync your learning across devices.</p>
@@ -679,7 +713,7 @@ feed.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)retur
  store()});
 feed.addEventListener("dblclick",e=>{const p=e.target.closest(".post");if(!p)return;const i=+p.dataset.i;liked.add(i);p.querySelector("[data-a=l]").classList.add("on");store()});
 const chips=document.getElementById("chips");
-["All",...Object.keys(COL),"Liked","Saved","Completed"].forEach(t=>{const b=document.createElement("button");b.className="chip";b.textContent=t;b.setAttribute("aria-pressed",t===filter);b.onclick=()=>{filter=t;chips.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));render()};chips.append(b)});
+["All",...Object.keys(COL)].forEach(t=>{const b=document.createElement("button");b.className="chip";b.textContent=t;b.setAttribute("aria-pressed",t===filter);b.onclick=()=>{filter=t;chips.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));render()};chips.append(b)});
 window.__setSqlGramFilter = t => {
   filter=t;
   chips.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x.textContent===filter));
@@ -711,13 +745,23 @@ function refreshProfile() {
   const user=auth.currentUser;
   if(!user)return;
   $("profileEmail").textContent=user.email||"";
+  $("drawerEmail").textContent=user.email||"";
+  $("drawerName").textContent=user.displayName||"SqlGram learner";
+  $("drawerAvatar").textContent=(user.displayName||user.email||"S").trim().charAt(0).toUpperCase();
   $("displayName").value=user.displayName||"";
   $("profileAvatar").textContent=(user.displayName||user.email||"S").trim().charAt(0).toUpperCase();
   $("likedCount").textContent=JSON.parse(localStorage.getItem("l"+user.uid)||"[]").length;
   $("savedCount").textContent=JSON.parse(localStorage.getItem("s"+user.uid)||"[]").length;
   $("completedCount").textContent=JSON.parse(localStorage.getItem("d"+user.uid)||"[]").length;
 }
-$("profileBtn").addEventListener("click",()=>{refreshProfile();$("profilePanel").hidden=false;});
+function closeDrawer(){$("drawer").classList.remove("open");$("drawer").setAttribute("aria-hidden","true");$("drawerShade").hidden=true;$("menuBtn").setAttribute("aria-expanded","false");}
+$("menuBtn").addEventListener("click",()=>{refreshProfile();$("drawer").classList.add("open");$("drawer").setAttribute("aria-hidden","false");$("drawerShade").hidden=false;$("menuBtn").setAttribute("aria-expanded","true");});
+$("closeDrawer").addEventListener("click",closeDrawer);$("drawerShade").addEventListener("click",closeDrawer);
+document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",()=>{const a=b.dataset.menu;closeDrawer();if(a==="profile"){refreshProfile();$("profilePanel").hidden=false;}else if(a==="settings"){$("settingsPanel").hidden=false;}else window.__setSqlGramFilter(a);}));
+$("closeSettings").addEventListener("click",()=>$("settingsPanel").hidden=true);
+const savedTheme=localStorage.getItem("sqlgram-theme")||"system";$("themeChoice").value=savedTheme;
+function applyTheme(t){if(t==="system")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",t);}
+applyTheme(savedTheme);$("themeChoice").addEventListener("change",e=>{localStorage.setItem("sqlgram-theme",e.target.value);applyTheme(e.target.value);});
 $("closeProfile").addEventListener("click",()=>{$("profilePanel").hidden=true;});
 $("saveProfile").addEventListener("click",async()=>{
   const name=$("displayName").value.trim();
@@ -792,8 +836,10 @@ onAuthStateChanged(auth, async user => {
     localStorage.removeItem("uid");
     $("auth").hidden = false;
     $("out").hidden = true;
-    $("profileBtn").hidden = true;
+    $("menuBtn").hidden = true;
     $("profilePanel").hidden = true;
+    $("settingsPanel").hidden = true;
+    closeDrawer();
     return;
   }
   const previousUid = localStorage.getItem("uid");
@@ -805,7 +851,7 @@ onAuthStateChanged(auth, async user => {
   localStorage.setItem("uid", user.uid);
   $("auth").hidden = true;
   $("out").hidden = false;
-  $("profileBtn").hidden = false;
+  $("menuBtn").hidden = false;
   refreshProfile();
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
