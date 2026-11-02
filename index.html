@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#3b6cf6"><link rel="icon" href="icon-192.png"><title>Learning SQL from Scratch</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f2f7;--card:#fff;--ink:#151a2c;--mute:#6a7088;--line:#e1e3ec;--code:#12141d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0d14;--card:#171a26;--ink:#eef0f8;--mute:#9aa0b8;--line:#272b3c}}
+:root[data-theme="dark"]{--bg:#0b0d14;--card:#171a26;--ink:#eef0f8;--mute:#9aa0b8;--line:#272b3c}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,sans-serif}
+.app{max-width:480px;height:100%;margin:auto;display:flex;flex-direction:column;background:var(--bg)}
+header{padding:12px 16px 8px;display:flex;align-items:center;justify-content:space-between}
+h1{font-size:20px;font-weight:700;letter-spacing:-.02em}
+#count{font:600 13px "JetBrains Mono",monospace;color:var(--mute)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 16px 12px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 14px;font:500 14px inherit;font-family:inherit;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:focus-visible{outline:2px solid #3b6cf6;outline-offset:2px}
+#feed{flex:1;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain}
+.post{height:100%;scroll-snap-align:start;scroll-snap-stop:always;padding:0 12px 12px;display:flex}
+.card{flex:1;min-height:0;overflow-y:auto;background:var(--card);border-radius:22px;border:1px solid var(--line);display:flex;flex-direction:column;border-top:6px solid var(--c)}
+.who{display:flex;align-items:center;gap:10px;padding:14px 16px 0}
+.av{width:38px;height:38px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-weight:700}
+.who b{display:block;font-size:15px}.who span{font-size:13px;color:var(--mute)}
+.card h2{font-size:28px;line-height:1.1;letter-spacing:-.03em;padding:14px 16px 4px}
+.tag{padding:0 16px 12px;color:var(--mute);font-size:16px}
+pre{margin:0 12px;background:var(--code);color:#e6e8f2;border-radius:14px;padding:14px;font:400 14px/1.6 "JetBrains Mono",ui-monospace,monospace;overflow-x:auto}
+.k{color:#ff7eb6;font-weight:600}.s{color:#8fe3a4}.n{color:#ffd479}.c{color:#7c839c}
+.res{margin:10px 12px 0;overflow-x:auto}
+.res small{display:block;color:var(--mute);font-size:12px;margin-bottom:4px}
+table{border-collapse:collapse;font:400 13px "JetBrains Mono",monospace;width:100%}
+th,td{border:1px solid var(--line);padding:5px 9px;text-align:left;white-space:nowrap}
+th{background:color-mix(in srgb,var(--c) 14%,transparent)}
+.why{padding:14px 16px;font-size:16px;line-height:1.5;max-width:60ch}
+.acts{margin-top:auto;display:flex;gap:6px;padding:6px 10px 12px}
+.acts button{background:none;border:0;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:6px;padding:8px;border-radius:10px;font:500 14px inherit;font-family:inherit}
+.acts svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8}
+.acts .on svg{fill:var(--c);stroke:var(--c)}
+summary{margin:6px 12px;padding:10px 14px;border:1px solid var(--c);color:var(--c);border-radius:12px;cursor:pointer;font-weight:600;list-style:none}details{margin-top:6px}details[open] summary{margin-bottom:10px}.hint{text-align:center;color:var(--mute);font-size:13px;padding-bottom:6px}
+.empty{padding:40px 24px;text-align:center;color:var(--mute)}
+@media (prefers-reduced-motion:no-preference){#feed{scroll-behavior:smooth}}
+#auth{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:24px}
+[hidden]{display:none!important}
+.ab{width:100%;max-width:380px;display:grid;gap:12px}
+.ab p{color:var(--mute)}.ab .or{text-align:center;font-size:14px}
+.ab input{width:100%;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:500 17px inherit;font-family:inherit}
+.gbtn,.pbtn{padding:14px;border-radius:12px;border:1px solid var(--line);font:600 16px inherit;font-family:inherit;cursor:pointer}
+.gbtn{background:var(--card);color:var(--ink)}.pbtn{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.lnk{background:none;border:0;color:var(--mute);font:500 13px inherit;font-family:inherit;cursor:pointer;text-decoration:underline}
+#err{color:#d33;min-height:1.2em;font-size:14px}
+</style></head><body>
+<div class="app">
+<header><h1>Learning SQL from Scratch</h1><span><span id="count"></span> <button class="lnk" id="out">Sign out</button></span></header>
+<nav class="chips" id="chips" aria-label="Topics"></nav>
+<main id="feed" tabindex="0"></main>
+</div>
+<div id="auth" hidden><div class="ab"><h1>Learning SQL from Scratch</h1><p>Learn SQL one swipe at a time. Free, no account needed.</p>
+<button class="pbtn" id="guest">Start learning</button>
+<button class="gbtn" id="g" hidden>Sign in with Google to keep your likes</button>
+<p id="err" role="alert"></p></div></div>
+<script>
+const M=["1 Intro","2 Queries","3 Functions","4 Aggregates","5 Joins","6 Subqueries","7 Set ops","8 Windows","9 DML","10 DDL","11 Keys","12 Design","13 Transactions","14 Objects","15 Performance","16 Data eng"];const COL={};M.forEach((m,i)=>COL[m]=`hsl(${i*22+200},62%,46%)`);COL.Practice="#2a9d3f";
+const P=[
+["Basics","Beginner","SELECT","Pick the columns you need",`SELECT name, city
+FROM customers;`,"name|city;Asha|Kolkata;Ben|Leeds;Chen|Leeds","SELECT lists the columns you want back. FROM says which table to read. Naming columns instead of using * keeps results small and your intent clear."],
+["Basics","Beginner","DISTINCT","Remove duplicate rows",`SELECT DISTINCT city
+FROM customers;`,"city;Kolkata;Leeds","DISTINCT keeps one copy of every unique result. Three customers lived in two cities, so you get two rows."],
+["Basics","Beginner","ORDER BY and LIMIT","Sort, then take the top few",`SELECT name, price
+FROM products
+ORDER BY price DESC
+LIMIT 2;`,"name|price;Laptop|899;Phone|499","ORDER BY sorts the rows (ASC is the default, DESC reverses it). LIMIT cuts the result to the first N rows, which makes it perfect for top-N questions."],
+["Basics","Beginner","UPDATE","Change existing rows safely",`UPDATE products
+SET price = 449
+WHERE name = 'Phone';`,"","UPDATE changes values in rows that already exist. Always include WHERE: without it, every row in the table gets the new price."],
+["Filtering","Beginner","WHERE","Keep only matching rows",`SELECT name, age
+FROM customers
+WHERE age >= 30;`,"name|age;Asha|34;Chen|41","WHERE runs before anything is returned and discards rows that don’t pass the test. Compare with =, <>, <, >, <=, >=."],
+["Filtering","Beginner","AND, OR","Combine conditions with brackets",`SELECT *
+FROM orders
+WHERE status = 'paid'
+  AND (total > 100 OR vip = 1);`,"","AND binds tighter than OR. Without the brackets, SQL would read it as (paid AND total > 100) OR vip. Brackets make your meaning explicit."],
+["Filtering","Beginner","LIKE","Search for text patterns",`SELECT name
+FROM customers
+WHERE name LIKE 'A%';`,"name;Asha;Arun","% matches any run of characters and _ matches exactly one. 'A%' means anything starting with A."],
+["Filtering","Beginner","IN and BETWEEN","Match lists and ranges",`SELECT *
+FROM orders
+WHERE status IN ('paid','shipped')
+  AND total BETWEEN 50 AND 200;`,"","IN replaces a chain of ORs. BETWEEN is inclusive, so both 50 and 200 match."],
+["Filtering","Beginner","IS NULL","Missing values need special care",`SELECT name
+FROM customers
+WHERE phone IS NULL;`,"name;Ben","NULL means unknown, so phone = NULL is never true. Use IS NULL or IS NOT NULL to test for it."],
+["Aggregation","Intermediate","COUNT, SUM, AVG","Turn many rows into one number",`SELECT COUNT(*) AS orders,
+       SUM(total) AS revenue,
+       AVG(total) AS average
+FROM orders;`,"orders|revenue|average;120|15400|128.3","Aggregate functions collapse rows into a single value. COUNT(*) counts rows, while COUNT(column) skips NULLs."],
+["Aggregation","Intermediate","GROUP BY","One result per group",`SELECT city, COUNT(*) AS customers
+FROM customers
+GROUP BY city;`,"city|customers;Kolkata|1;Leeds|2","GROUP BY splits rows into buckets and runs the aggregate on each bucket. Every non-aggregated column in SELECT must appear in GROUP BY."],
+["Aggregation","Intermediate","HAVING","Filter groups, not rows",`SELECT city, COUNT(*) AS n
+FROM customers
+GROUP BY city
+HAVING COUNT(*) > 1;`,"city|n;Leeds|2","WHERE filters rows before grouping. HAVING filters the groups after aggregation, so it can use COUNT, SUM and friends."],
+["Joins","Intermediate","INNER JOIN","Combine two tables on a key",`SELECT c.name, o.total
+FROM customers c
+JOIN orders o
+  ON o.customer_id = c.id;`,"name|total;Asha|250;Chen|90","JOIN matches rows where the ON condition is true. Customers with no orders disappear from an INNER JOIN. Aliases like c and o keep it short."],
+["Joins","Intermediate","LEFT JOIN","Keep everyone from the left table",`SELECT c.name, o.total
+FROM customers c
+LEFT JOIN orders o
+  ON o.customer_id = c.id;`,"name|total;Asha|250;Ben|NULL;Chen|90","LEFT JOIN keeps every row from the left table and fills NULL where nothing matches. Add WHERE o.id IS NULL to find customers who never ordered."],
+["Advanced","Advanced","CASE WHEN","If-then logic inside a query",`SELECT name,
+  CASE WHEN age >= 40 THEN 'senior'
+       WHEN age >= 30 THEN 'mid'
+       ELSE 'junior' END AS band
+FROM customers;`,"name|band;Asha|mid;Ben|junior;Chen|senior","CASE checks conditions top to bottom and returns the first match. It’s how you create labels and buckets without changing the data."],
+["Advanced","Advanced","CTE (WITH)","Name a step to keep queries readable",`WITH big AS (
+  SELECT customer_id, SUM(total) AS spent
+  FROM orders GROUP BY customer_id
+)
+SELECT * FROM big WHERE spent > 200;`,"customer_id|spent;1|250","A CTE is a named temporary result you define once and query like a table. It turns deeply nested subqueries into steps you can read in order."],
+["Advanced","Advanced","Window functions","Rank rows without collapsing them",`SELECT name, city, age,
+  RANK() OVER (
+    PARTITION BY city ORDER BY age DESC
+  ) AS rk
+FROM customers;`,"name|city|age|rk;Asha|Kolkata|34|1;Chen|Leeds|41|1;Ben|Leeds|28|2","Unlike GROUP BY, a window function keeps every row. PARTITION BY restarts the ranking per city, and ORDER BY decides who is first."],
+["Basics","Beginner","CREATE TABLE","Define the shape of your data",`CREATE TABLE customers (
+  id INT PRIMARY KEY,
+  name VARCHAR(50) NOT NULL,
+  age INT,
+  city VARCHAR(30)
+);`,"","A table is columns with types plus rules. PRIMARY KEY makes each row uniquely identifiable and NOT NULL forbids missing values. Good keys and types make every later query easier."],
+["Basics","Beginner","INSERT and DELETE","Add and remove rows",`INSERT INTO customers (id, name, age, city)
+VALUES (4, 'Dev', 29, 'Pune');
+
+DELETE FROM customers
+WHERE id = 4;`,"","List the columns in INSERT so it survives schema changes. DELETE, like UPDATE, needs a WHERE or it empties the table. Run it as a SELECT first to preview what it will hit."],
+["Joins","Intermediate","Self join","A table joined to itself",`SELECT e.name AS employee,
+       m.name AS manager
+FROM employees e
+JOIN employees m
+  ON e.manager_id = m.id;`,"employee|manager;Ravi|Meera;Sana|Meera","Give one table two aliases and join it on a parent column. This is the standard way to read hierarchies such as employee and manager."],
+["Joins","Intermediate","UNION","Stack results from two queries",`SELECT city FROM customers
+UNION
+SELECT city FROM suppliers;`,"city;Kolkata;Leeds;Pune","UNION removes duplicates; UNION ALL keeps them and is faster. Both queries need the same number of columns with compatible types."],
+["Joins","Intermediate","FULL, RIGHT, CROSS","The other join types",`SELECT c.name, o.total
+FROM customers c
+FULL OUTER JOIN orders o
+  ON o.customer_id = c.id;`,"","FULL OUTER keeps unmatched rows from both sides. RIGHT is LEFT mirrored. CROSS JOIN pairs every row with every row, so use it deliberately, for example to build a calendar grid."],
+["Advanced","Advanced","Subquery and EXISTS","A query inside a query",`SELECT name
+FROM customers c
+WHERE EXISTS (
+  SELECT 1 FROM orders o
+  WHERE o.customer_id = c.id
+);`,"name;Asha;Chen","EXISTS turns true as soon as the inner query finds one row, so it is efficient for yes/no checks. NOT EXISTS is the safe way to find rows with no match; NOT IN misbehaves when the list contains NULL."],
+["Advanced","Advanced","LAG and running totals","Look at neighbouring rows",`SELECT day, sales,
+  LAG(sales) OVER (ORDER BY day) AS prev,
+  SUM(sales) OVER (ORDER BY day) AS running
+FROM daily_sales;`,"day|sales|prev|running;1|10|NULL|10;2|15|10|25;3|5|15|30","LAG reads the previous row (LEAD reads the next). SUM with OVER and ORDER BY accumulates into a running total. Both are the basis of day-over-day comparisons."],
+["Advanced","Advanced","Dates and strings","Functions differ by database",`SELECT DATE_TRUNC('month', order_date) AS month,
+       UPPER(LEFT(name, 3)) AS code
+FROM orders;`,"","Date and string functions are the least portable part of SQL: MySQL uses DATE_FORMAT, SQL Server uses DATEPART, Postgres and Snowflake use DATE_TRUNC. Check your dialect’s docs; the ideas (truncate, extract, diff, concat) stay the same."],
+["Advanced","Advanced","Indexes and EXPLAIN","Why a query is slow",`CREATE INDEX idx_orders_cust
+  ON orders (customer_id);
+
+EXPLAIN
+SELECT * FROM orders
+WHERE customer_id = 7;`,"","An index lets the database jump to matching rows instead of scanning the whole table, and EXPLAIN shows the plan so you can confirm it. Wrapping an indexed column in a function inside WHERE usually disables the index."],
+["Practice","LeetCode 175, Easy","Combine Two Tables","Report each person’s first name, last name, city and state, including people with no address.",`SELECT p.firstName, p.lastName,
+       a.city, a.state
+FROM Person p
+LEFT JOIN Address a
+  ON a.personId = p.personId;`,"Person~personId|firstName|lastName;1|Ana|Roy;2|Bo|Das#Address~personId|city|state;1|Pune|MH","LEFT JOIN keeps every person. Bo has no address, so his city and state come back as NULL. An inner join would silently drop him.",1],
+["Practice","LeetCode 176, Easy","Second Highest Salary","Return the second highest distinct salary as one value, or NULL if it doesn’t exist.",`SELECT (
+  SELECT DISTINCT salary
+  FROM Employee
+  ORDER BY salary DESC
+  LIMIT 1 OFFSET 1
+) AS SecondHighestSalary;`,"Employee~id|salary;1|100;2|200;3|300","DISTINCT handles ties, OFFSET 1 skips the top salary, and wrapping the subquery in an outer SELECT turns an empty result into NULL. For the Nth highest, change the offset to N-1.",1],
+["Practice","LeetCode 178, Medium","Rank Scores","Rank scores from high to low. Equal scores share a rank and ranks have no gaps.",`SELECT score,
+  DENSE_RANK() OVER (
+    ORDER BY score DESC
+  ) AS "rank"
+FROM Scores;`,"Scores~id|score;1|3.50;2|3.65;3|4.00;4|3.85;5|4.00;6|3.65","DENSE_RANK gives ties the same rank and continues with the next number. RANK would skip numbers after a tie, and ROW_NUMBER never ties.",1],
+["Practice","LeetCode 182, Easy","Duplicate Emails","Find every email that appears more than once.",`SELECT email
+FROM Person
+GROUP BY email
+HAVING COUNT(*) > 1;`,"Person~id|email;1|a@x.com;2|b@x.com;3|a@x.com","Group by the column you suspect is duplicated, then keep the groups whose count is above 1. HAVING is required because the condition is on an aggregate.",1],
+["Practice","LeetCode 181, Easy","Employees Earning More Than Their Managers","List employees whose salary is higher than their manager’s.",`SELECT e.name AS Employee
+FROM Employee e
+JOIN Employee m
+  ON e.managerId = m.id
+WHERE e.salary > m.salary;`,"Employee~id|name|salary|managerId;1|Joe|70000|3;2|Henry|80000|4;3|Sam|60000|NULL;4|Max|90000|NULL","A self join: alias e is the employee and m is their manager row. Only Joe qualifies (70000 vs 60000).",1],
+["Practice","LeetCode 183, Easy","Customers Who Never Order","Find customers who have never placed an order.",`SELECT c.name AS Customers
+FROM Customers c
+LEFT JOIN Orders o
+  ON o.customerId = c.id
+WHERE o.id IS NULL;`,"Customers~id|name;1|Joe;2|Henry#Orders~id|customerId;1|1","This is the anti-join pattern: LEFT JOIN, then keep rows where the right side is NULL. NOT EXISTS gives the same answer.",1],
+["Practice","LeetCode 184, Medium","Department Highest Salary","For each department, list the employees with the highest salary. Ties all count.",`SELECT d.name AS Department,
+       t.name AS Employee,
+       t.salary AS Salary
+FROM (
+  SELECT name, salary, departmentId,
+    DENSE_RANK() OVER (
+      PARTITION BY departmentId
+      ORDER BY salary DESC
+    ) AS rk
+  FROM Employee
+) t
+JOIN Department d
+  ON d.id = t.departmentId
+WHERE t.rk = 1;`,"Employee~id|name|salary|departmentId;1|Joe|70000|1;2|Jim|90000|1;3|Max|80000|2#Department~id|name;1|IT;2|Sales","This is the top-N-per-group pattern, asked in nearly every SQL interview. Rank inside each partition, then filter on the rank. DENSE_RANK keeps ties; ROW_NUMBER would pick just one.",1],
+["Practice","LeetCode 196, Easy","Delete Duplicate Emails","Delete duplicate rows, keeping the one with the smallest id for each email.",`DELETE p1
+FROM Person p1
+JOIN Person p2
+  ON p1.email = p2.email
+ AND p1.id > p2.id;`,"Person~id|email;1|a@x.com;2|b@x.com;3|a@x.com","Join the table to itself on the email and delete the row whose id is larger. This DELETE-with-JOIN form is MySQL syntax, which is what LeetCode uses; other databases need a subquery on MIN(id) instead.",1],
+["Practice","LeetCode 197, Easy","Rising Temperature","Find the ids of days that were warmer than the day before.",`SELECT w.id
+FROM Weather w
+JOIN Weather y
+  ON y.recordDate
+   = w.recordDate - INTERVAL 1 DAY
+WHERE w.temperature > y.temperature;`,"Weather~id|recordDate|temperature;1|2024-01-01|10;2|2024-01-02|25;3|2024-01-03|20;4|2024-01-04|30","Join each day to its previous calendar day by date arithmetic, then compare temperatures. Matching on dates (not on the previous row) stays correct even when days are missing. The answer is ids 2 and 4.",1],
+["Practice","LeetCode 180, Medium","Consecutive Numbers","Find numbers that appear at least three times in a row.",`SELECT DISTINCT num AS ConsecutiveNums
+FROM (
+  SELECT num,
+    LAG(num, 1) OVER (ORDER BY id) AS p1,
+    LAG(num, 2) OVER (ORDER BY id) AS p2
+  FROM Logs
+) t
+WHERE num = p1 AND num = p2;`,"Logs~id|num;1|1;2|1;3|1;4|2;5|1;6|2;7|2","LAG pulls the previous two values onto each row, so a streak of three is just three equal values on one row. DISTINCT removes repeats when a streak is longer.",1],
+["Practice","Interview pattern, Hard","Longest login streak","Given each user’s login dates, find the longest run of consecutive days.",`SELECT user_id, COUNT(*) AS streak
+FROM (
+  SELECT user_id, login_date,
+    login_date - ROW_NUMBER() OVER (
+      PARTITION BY user_id
+      ORDER BY login_date
+    ) * INTERVAL '1 day' AS grp
+  FROM logins
+) t
+GROUP BY user_id, grp
+ORDER BY streak DESC
+LIMIT 1;`,"logins~user_id|login_date;1|2024-05-01;1|2024-05-02;1|2024-05-03;1|2024-05-07","The gaps-and-islands trick: subtract an increasing row number from the date. Consecutive days all land on the same value (grp), so each group is one streak. Written for Postgres; adjust the date arithmetic for your database.",1],
+["Practice","HackerRank, Medium","Occupations (pivot)","Turn rows of name and occupation into columns, one per occupation, names sorted alphabetically. Simplified to two roles.",`SELECT
+  MAX(CASE WHEN occupation = 'Doctor'
+           THEN name END) AS Doctor,
+  MAX(CASE WHEN occupation = 'Professor'
+           THEN name END) AS Professor
+FROM (
+  SELECT name, occupation,
+    ROW_NUMBER() OVER (
+      PARTITION BY occupation
+      ORDER BY name
+    ) AS rn
+  FROM occupations
+) t
+GROUP BY rn
+ORDER BY rn;`,"occupations~name|occupation;Ann|Doctor;Raj|Doctor;Eli|Professor;Zoe|Professor","Conditional aggregation is how you pivot in SQL. Number the names inside each occupation, group by that number, and let MAX(CASE ...) pick the name for each column.",1],
+["Foundations","Start here","What is SQL?","The language for talking to databases",`SELECT 'Hello, SQL' AS greeting;`,"greeting;Hello, SQL","SQL (Structured Query Language, said S-Q-L or “sequel”) is the standard language for storing, finding, changing and combining data in a relational database. You describe the result you want and the database works out how to get it. MySQL, PostgreSQL, SQL Server, Oracle, Snowflake and BigQuery all speak SQL, with small dialect differences."],
+["Foundations","Start here","Why do we use SQL?","The problem it solves","","","Spreadsheets slow down and break when data gets big or many people edit at once. A database stores millions of rows, answers in milliseconds, lets many users read and write safely together, and enforces rules so bad data can’t get in. SQL is the common language for all of it, so analysts, engineers, data scientists and app developers all use it."],
+["Foundations","Start here","Tables, rows and columns","How data is laid out",`-- A database holds many tables.
+-- Each table is one kind of thing:
+-- customers, orders, products...`,"customers~id|name|city;1|Asha|Kolkata;2|Ben|Leeds","A table is a grid. Each column is one attribute with a fixed type (id, name, city). Each row is one record, here one customer. A cell is where a row meets a column. A database is a collection of related tables."],
+["Foundations","Start here","Data types","Every column has a type",`-- INT, BIGINT        whole numbers
+-- DECIMAL(10,2)      exact values, e.g. money
+-- FLOAT              approximate decimals
+-- VARCHAR(n), TEXT   text
+-- DATE, TIMESTAMP    dates and times
+-- BOOLEAN            true or false
+-- JSON               nested data`,"","The type decides what a column can store and what you can do with it. Use DECIMAL for money, never FLOAT, because FLOAT rounds. Type names vary slightly between databases."],
+["Foundations","Start here","Primary and foreign keys","How tables connect",`CREATE TABLE orders (
+  id INT PRIMARY KEY,
+  customer_id INT,
+  total DECIMAL(10,2),
+  FOREIGN KEY (customer_id)
+    REFERENCES customers (id)
+);`,"","A primary key uniquely identifies each row. A foreign key stores another table’s primary key, linking the two: each order points to one customer, and a customer can have many orders (one-to-many). Many-to-many links, like students and courses, use a third junction table holding both keys."],
+["Foundations","Start here","The five families of SQL","What each command is for",`-- DQL  query data       SELECT
+-- DML  change data      INSERT, UPDATE, DELETE, MERGE
+-- DDL  define structure  CREATE, ALTER, DROP, TRUNCATE
+-- DCL  control access    GRANT, REVOKE
+-- TCL  control changes   BEGIN, COMMIT, ROLLBACK`,"","Commands group by purpose. Most of this app covers DQL (reading) first, then DML and DDL, and finally the engineering topics around access, transactions and performance."],
+["Foundations","Start here","How a query is read","Written order is not run order",`SELECT city, COUNT(*) AS n   -- 5
+FROM customers               -- 1
+WHERE age > 18               -- 2
+GROUP BY city                -- 3
+HAVING COUNT(*) > 1          -- 4
+ORDER BY n DESC              -- 6
+LIMIT 5;                     -- 7`,"","You write SELECT first, but the database starts at FROM. This explains why WHERE can’t use a SELECT alias (it hasn’t been created yet) while ORDER BY can. Keep this order in mind when a query errors."],
+["Filtering","Beginner","COALESCE","Replace NULL with a default",`SELECT name,
+  COALESCE(phone, 'no phone') AS contact
+FROM customers;`,"name|contact;Asha|98300;Ben|no phone","COALESCE returns the first non-NULL value in its list. Use it to show defaults and to stop NULL from poisoning arithmetic, since 5 + NULL is NULL."],
+["Advanced","Advanced","Recursive CTE","Walk a hierarchy",`WITH RECURSIVE chain AS (
+  SELECT id, name, manager_id
+  FROM employees
+  WHERE manager_id IS NULL
+  UNION ALL
+  SELECT e.id, e.name, e.manager_id
+  FROM employees e
+  JOIN chain c ON e.manager_id = c.id
+)
+SELECT * FROM chain;`,"","A recursive CTE has an anchor (the top of the tree) and a step that joins back to itself, repeating until no new rows appear. Use it for org charts, folders and bills of materials."],
+["Advanced","Advanced","Window frames","Moving averages",`SELECT day, sales,
+  AVG(sales) OVER (
+    ORDER BY day
+    ROWS BETWEEN 2 PRECEDING
+             AND CURRENT ROW
+  ) AS avg3
+FROM daily_sales;`,"day|sales|avg3;1|10|10;2|15|12.5;3|5|10","The frame says which neighbouring rows each calculation sees. Here it is the current row and the two before it. Related tools: NTILE, FIRST_VALUE, LAST_VALUE."],
+["Advanced","Advanced","ROLLUP","Subtotals in one query",`SELECT city, status, COUNT(*) AS n
+FROM orders
+GROUP BY ROLLUP (city, status);`,"","ROLLUP adds a subtotal per city and a grand total row (shown as NULL). GROUPING SETS lets you pick the exact combinations, and CUBE produces every one."],
+["Advanced","Advanced","MERGE (upsert)","Update if it exists, else insert",`MERGE INTO customers t
+USING staging s ON t.id = s.id
+WHEN MATCHED THEN
+  UPDATE SET t.name = s.name
+WHEN NOT MATCHED THEN
+  INSERT (id, name)
+  VALUES (s.id, s.name);`,"","The core pattern of data loading: compare a staging table to the target and apply changes in one statement. Postgres also offers INSERT ... ON CONFLICT and MySQL offers ON DUPLICATE KEY UPDATE."],
+["Advanced","Advanced","JSON in SQL","Query semi-structured data",`SELECT payload->>'city' AS city
+FROM events;`,"","Modern databases store JSON in a column and query inside it. The syntax differs: Postgres uses ->>, MySQL uses JSON_EXTRACT, Snowflake uses payload:city. Flatten JSON into real columns once you query it often."],
+["Engineering","Intermediate","Constraints","Rules the database enforces",`CREATE TABLE users (
+  id INT PRIMARY KEY,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  age INT CHECK (age >= 0),
+  status VARCHAR(10) DEFAULT 'active'
+);`,"","PRIMARY KEY, UNIQUE, NOT NULL, CHECK, DEFAULT and FOREIGN KEY keep data valid no matter which app writes it. Enforcing rules in the database is safer than trusting every application."],
+["Engineering","Intermediate","ALTER, DROP, TRUNCATE","Change structure",`ALTER TABLE users ADD COLUMN city VARCHAR(30);
+TRUNCATE TABLE logs;
+DROP TABLE old_logs;`,"","ALTER changes a table’s structure. TRUNCATE removes every row quickly and keeps the table. DELETE removes chosen rows and can usually be rolled back. DROP deletes the table itself, so double-check the name."],
+["Engineering","Intermediate","Views","Save a query as a virtual table",`CREATE VIEW active_users AS
+SELECT id, email
+FROM users
+WHERE status = 'active';
+
+SELECT * FROM active_users;`,"","A view stores the query, not the data, so it is always current. Use it to simplify joins and to expose only some columns. A materialized view stores the results and must be refreshed, which makes heavy aggregates fast."],
+["Engineering","Advanced","Procedures and functions","Logic stored in the database",`-- MySQL style
+CREATE PROCEDURE deactivate_user(IN uid INT)
+BEGIN
+  UPDATE users SET status = 'inactive'
+  WHERE id = uid;
+END;`,"","A procedure runs a block of statements on demand. A function returns a value you can use inside a query. Syntax differs widely (T-SQL, PL/pgSQL, PL/SQL), so learn the idea first and the dialect when you need it."],
+["Engineering","Advanced","Triggers","Run code automatically on change",`-- MySQL style
+CREATE TRIGGER log_update
+AFTER UPDATE ON users
+FOR EACH ROW
+INSERT INTO audit (user_id, changed_at)
+VALUES (NEW.id, NOW());`,"","A trigger fires on INSERT, UPDATE or DELETE. It suits audit trails and derived values, but it is invisible to anyone reading application code, so use it sparingly."],
+["Engineering","Intermediate","Transactions and ACID","All or nothing",`BEGIN;
+UPDATE accounts SET balance = balance - 100
+WHERE id = 1;
+UPDATE accounts SET balance = balance + 100
+WHERE id = 2;
+COMMIT;`,"","A transaction groups statements so they succeed together or not at all; ROLLBACK undoes them. ACID: Atomicity (all or nothing), Consistency (rules always hold), Isolation (transactions don’t see each other’s half-done work), Durability (committed data survives a crash)."],
+["Engineering","Advanced","Isolation levels and locks","Concurrent users",`SET TRANSACTION ISOLATION LEVEL
+  REPEATABLE READ;`,"","Read Uncommitted allows dirty reads, Read Committed blocks them, Repeatable Read keeps a row stable within your transaction, and Serializable behaves as if users ran one at a time. Higher levels are safer but slower. Locks make writers wait; a deadlock is two transactions waiting on each other, so the database cancels one and you retry."],
+["Engineering","Intermediate","Normalization","Store each fact once",`-- 1NF  one value per cell, no repeating groups
+-- 2NF  every column depends on the whole key
+-- 3NF  columns depend only on the key`,"","Normalizing splits data into related tables so a change happens in one place, which prevents update anomalies. Denormalizing duplicates data on purpose to make reads faster, which is common in analytics."],
+["Engineering","Advanced","Index types","Choose the right index",`CREATE INDEX idx_city_age
+  ON customers (city, age);`,"","B-tree is the default and handles equality and ranges. Hash indexes handle equality only. A composite index follows its leftmost columns: it helps city or city+age, not age alone. A covering index holds every column a query needs. A clustered index is the physical row order (one per table); non-clustered indexes are separate lookups. Indexes speed reads but slow writes and use space."],
+["Engineering","Advanced","Clustering","Keep related rows together",`-- Snowflake
+ALTER TABLE orders
+  CLUSTER BY (order_date);`,"","In row stores, a clustered index decides the physical order of rows. In warehouses (Snowflake, BigQuery), clustering sorts data into chunks by chosen columns so queries filtering on them skip most chunks. Pick columns you filter on often."],
+["Engineering","Advanced","Partitioning","Split a huge table",`-- PostgreSQL
+CREATE TABLE sales (
+  id INT,
+  sold_on DATE,
+  amount DECIMAL(10,2)
+) PARTITION BY RANGE (sold_on);`,"","Partitioning splits one logical table into pieces by range (dates), list (regions) or hash. A query for one month reads only that partition, called partition pruning, and old data can be dropped by removing a partition."],
+["Engineering","Advanced","Sharding and replication","Scale beyond one server","","","Sharding spreads rows across separate servers by a key such as user id, so each holds a slice. Replication copies the same data to other servers: replicas serve reads and take over if the primary fails. Partitioning stays inside one database; sharding spans many."],
+["Engineering","Advanced","Execution plans","Make slow queries fast",`-- Slow: function on the column
+WHERE YEAR(order_date) = 2024
+
+-- Fast: range on the raw column
+WHERE order_date >= '2024-01-01'
+  AND order_date <  '2025-01-01'`,"","Run EXPLAIN and look for full table scans. Select only the columns you need, filter early, join on indexed keys, and keep filter columns bare so indexes apply. Databases join with nested loops, hash joins or merge joins and choose using table statistics."],
+["Engineering","Advanced","Data warehouse design","OLTP, OLAP and star schema",`-- fact_sales(date_key, product_key, amount)
+-- dim_date, dim_product, dim_customer`,"","OLTP systems run the app with many small writes. OLAP warehouses answer big analytical reads. A star schema puts measurable events in a fact table surrounded by descriptive dimension tables. Slowly changing dimension type 2 keeps history by adding a new row with start and end dates."],
+["Engineering","Intermediate","Security","Permissions and injection",`GRANT SELECT ON orders TO analyst;
+REVOKE SELECT ON orders FROM analyst;
+
+-- Never build SQL by joining strings:
+-- 'SELECT * FROM users WHERE id = ' + input`,"","Give each role only the access it needs. SQL injection happens when user input is pasted into a query and changes its meaning. Use parameterized queries so input is always treated as data."],
+["Practice","LeetCode 1045, Medium","Customers Who Bought All Products","Find customers who bought every product in the Product table.",`SELECT customer_id
+FROM Customer
+GROUP BY customer_id
+HAVING COUNT(DISTINCT product_key) = (
+  SELECT COUNT(*) FROM Product
+);`,"Customer~customer_id|product_key;1|5;2|6;3|5;3|6;1|6#Product~product_key;5;6","This is relational division. Count each customer’s distinct products and compare with the total number of products. Customers 1 and 3 qualify.",1],
+["Practice","Interview pattern, Hard","Year-over-year growth","Show each year’s revenue and the percentage change from the previous year.",`SELECT year, amount,
+  ROUND(100.0 * (amount - LAG(amount) OVER (ORDER BY year))
+    / LAG(amount) OVER (ORDER BY year), 1) AS growth_pct
+FROM revenue;`,"revenue~year|amount;2022|100;2023|150;2024|120","LAG brings the previous year onto the same row, so growth is plain arithmetic. 2022 has no previous year, so it stays NULL; 2023 is 50.0 and 2024 is -20.0.",1],
+[1,"Start here","Course map","16 modules in 4 stages",`-- Stage 1 Foundation: 1 Intro, 2 Queries, 3 Functions, 4 Aggregates
+-- Stage 2 Query building: 5 Joins, 6 Subqueries and CTEs, 7 Set ops, 8 Windows
+-- Stage 3 Database management: 9 DML, 10 DDL, 11 Keys, 12 Design, 13 Transactions, 14 Objects
+-- Stage 4 Industry readiness: 15 Performance, 16 Data engineering`,"","Follow the chips left to right; each module builds on the one before. Practice problems sit at the very end so you meet them with every tool in hand."],
+[1,"Start here","Data, DBMS and RDBMS","Four terms, one ladder","","","Data is raw facts (names, amounts, dates). A database is an organised collection of data. A DBMS is software that stores and manages it, handling access, safety and many users. An RDBMS is a DBMS that keeps data in related tables and speaks SQL. The difference: a plain DBMS may store files or hierarchies with no enforced relationships, while an RDBMS enforces keys and constraints."],
+[1,"Start here","SQL vs MySQL vs SQL Server","Language versus product","","","SQL is the language. MySQL, PostgreSQL, SQL Server and Oracle are products (RDBMS) that implement it, each adding extras: T-SQL for SQL Server, PL/SQL for Oracle, PL/pgSQL for PostgreSQL. Core SELECT, JOIN and GROUP BY work almost everywhere."],
+[1,"Start here","Databases and schemas","Folders for your tables",`CREATE SCHEMA sales;
+
+CREATE TABLE sales.orders (
+  id INT PRIMARY KEY,
+  total DECIMAL(10,2)
+);`,"","A server holds databases, a database holds schemas, and a schema holds tables, views and other objects. Schemas group related objects (sales, hr) and control access. You refer to a table as schema.table."],
+[1,"Start here","Relationships and ER diagrams","How tables relate",`-- One-to-one     user -> profile
+-- One-to-many    customer -> orders
+-- Many-to-many   students <-> courses
+--                (needs a junction table)`,"","An ER diagram draws entities (tables) as boxes and relationships as lines, with crow’s-foot ends showing one or many. Sketching it before you write CREATE TABLE prevents most design mistakes."],
+[2,"Beginner","Comparison, NOT and aliases","Small tools you use constantly",`SELECT name AS customer_name, age
+FROM customers c
+WHERE NOT city = 'Leeds'
+  AND age <> 30
+  AND age >= 18;`,"customer_name|age;Asha|34","Comparison operators: =, &lt;&gt; (or !=), &gt;, &lt;, &gt;=, &lt;=. NOT reverses a condition. AS gives a column or table a readable alias. SELECT * returns every column: handy for exploring, but avoid it in production code. To limit rows, MySQL and PostgreSQL use LIMIT, SQL Server uses TOP, and standard SQL uses FETCH FIRST."],
+[3,"Beginner","String functions","Clean and slice text",`SELECT UPPER(name) AS up,
+       LENGTH(name) AS len,
+       SUBSTRING(name, 1, 2) AS first2,
+       CONCAT(name, ' (', city, ')') AS label,
+       TRIM('  hi  ') AS trimmed,
+       REPLACE(city, 'Leeds', 'LDS') AS code
+FROM customers;`,"","UPPER and LOWER change case, LENGTH counts characters, SUBSTRING cuts a piece, CONCAT joins text, TRIM removes spaces and REPLACE swaps text. Names vary slightly (LEN in SQL Server, SUBSTR in Oracle)."],
+[3,"Beginner","Numeric and date functions","Round numbers, move dates",`SELECT ROUND(12.567, 1) AS r,
+       CEIL(4.2) AS up, FLOOR(4.8) AS down,
+       ABS(-7) AS a, MOD(10, 3) AS m,
+       CURRENT_DATE AS today,
+       EXTRACT(YEAR FROM order_date) AS yr
+FROM orders;`,"","ROUND, CEIL, FLOOR, ABS and MOD cover most number work. For dates, CURRENT_DATE gives today, EXTRACT pulls out the year or month, and a date-difference function counts the gap (DATEDIFF, DATE_DIFF or plain subtraction, depending on the database)."],
+[3,"Beginner","CAST and NULL helpers","Convert types, handle NULL",`SELECT CAST('2024-05-01' AS DATE) AS d,
+       CAST(price AS INT) AS whole,
+       amount / NULLIF(qty, 0) AS unit,
+       IFNULL(phone, 'n/a') AS phone
+FROM products;`,"","CAST converts between types (CONVERT in SQL Server). NULLIF returns NULL when two values match, which prevents divide-by-zero errors. IFNULL, ISNULL and NVL are database-specific cousins of COALESCE."],
+[4,"Beginner","COUNT variants, MIN, MAX","Know what you are counting",`SELECT COUNT(*) AS all_rows,
+       COUNT(phone) AS with_phone,
+       COUNT(DISTINCT city) AS cities,
+       MIN(age) AS youngest,
+       MAX(age) AS oldest
+FROM customers;`,"all_rows|with_phone|cities|youngest|oldest;3|2|2|28|41","COUNT(*) counts rows, COUNT(column) skips NULLs, and COUNT(DISTINCT column) counts unique values. Group by several columns (GROUP BY city, status) to get one result per combination."],
+[5,"Intermediate","Multi-table joins","Chain more than two tables",`SELECT c.name, o.id, p.title
+FROM customers c
+JOIN orders o
+  ON o.customer_id = c.id
+JOIN order_items i
+  ON i.order_id = o.id
+ AND i.qty > 1
+JOIN products p
+  ON p.id = i.product_id;`,"","Add one JOIN at a time, each with its own ON, and combine conditions with AND. Tables with no direct link are joined through the table between them (customers to products goes via orders and order_items). CROSS JOIN is the only join with no condition."],
+[5,"Intermediate","ON versus WHERE, duplicates","Two classic join traps",`-- Keeps all customers:
+LEFT JOIN orders o ON o.customer_id = c.id
+                   AND o.status = 'paid'
+
+-- Silently becomes an INNER JOIN:
+LEFT JOIN orders o ON o.customer_id = c.id
+WHERE o.status = 'paid'`,"","In an outer join, a filter in ON limits which right-side rows match, while the same filter in WHERE removes the NULL rows and defeats the join. Joining to a table with several matches multiplies rows (fan-out), so compare counts before and after. To find unmatched records, LEFT JOIN and filter for IS NULL. JOIN adds columns side by side; UNION stacks rows."],
+[6,"Intermediate","Subquery types","Scalar, row and correlated",`-- Scalar: one value
+SELECT name FROM employees
+WHERE salary > (SELECT AVG(salary) FROM employees);
+
+-- Correlated: runs per outer row
+SELECT name FROM employees e
+WHERE salary > (
+  SELECT AVG(salary) FROM employees
+  WHERE dept_id = e.dept_id
+);`,"","A scalar subquery returns one value, a multiple-row subquery returns a list (used with IN), and a correlated subquery refers to the outer row so it re-runs for each one. Subqueries can nest, but past two levels switch to CTEs for readability."],
+[6,"Intermediate","IN, EXISTS, ANY, ALL","Compare to a set",`SELECT name FROM employees
+WHERE salary > ALL (
+  SELECT salary FROM employees
+  WHERE dept_id = 2
+);`,"","ANY is true if the comparison holds for at least one value in the list; ALL needs it to hold for every value. IN checks membership. EXISTS stops at the first match and is safer with NULLs; IN is simpler for short lists. Modern optimizers often treat them alike."],
+[6,"Intermediate","Multiple CTEs","CTE vs subquery vs temp table",`WITH dept_avg AS (
+  SELECT dept_id, AVG(salary) AS avg_sal
+  FROM employees GROUP BY dept_id
+),
+above AS (
+  SELECT e.name, e.dept_id
+  FROM employees e
+  JOIN dept_avg d ON d.dept_id = e.dept_id
+  WHERE e.salary > d.avg_sal
+)
+SELECT * FROM above;`,"","Separate CTEs with commas; later ones can use earlier ones. A CTE lives for one statement and is mainly about readability. A subquery is inline. A temporary table is stored for your session, so use it when you reuse a result many times or need to index it."],
+[7,"Intermediate","INTERSECT and EXCEPT","Common and different rows",`SELECT email FROM east_customers
+INTERSECT
+SELECT email FROM west_customers;
+
+SELECT email FROM east_customers
+EXCEPT   -- MINUS in Oracle
+SELECT email FROM west_customers;`,"","INTERSECT returns rows found in both queries. EXCEPT (MINUS in Oracle) returns rows in the first but not the second. All set operators need the same number of columns with compatible types, remove duplicates unless you add ALL (where supported), and work on whole rows rather than matching keys like JOIN does."],
+[8,"Intermediate","ROW_NUMBER, RANK, DENSE_RANK, NTILE","Four ways to number rows",`SELECT name, salary,
+  ROW_NUMBER() OVER (ORDER BY salary DESC) AS rn,
+  RANK()       OVER (ORDER BY salary DESC) AS rk,
+  DENSE_RANK() OVER (ORDER BY salary DESC) AS dr,
+  NTILE(2)     OVER (ORDER BY salary DESC) AS half
+FROM employees;`,"name|salary|rn|rk|dr|half;Ann|90|1|1|1|1;Bob|80|2|2|2|1;Cy|80|3|2|2|2;Di|70|4|4|3|2","ROW_NUMBER never repeats, RANK repeats on ties and then skips numbers, DENSE_RANK repeats without skipping, and NTILE(n) splits rows into n equal buckets. ROW_NUMBER is the tool for picking one row per group (the latest transaction per customer) and for flagging duplicates (rn above 1)."],
+[8,"Intermediate","LEAD, FIRST_VALUE, LAST_VALUE","Read other rows",`SELECT day, sales,
+  LEAD(sales) OVER (ORDER BY day) AS next_day,
+  FIRST_VALUE(sales) OVER (ORDER BY day) AS first_day,
+  LAST_VALUE(sales) OVER (
+    ORDER BY day
+    ROWS BETWEEN UNBOUNDED PRECEDING
+             AND UNBOUNDED FOLLOWING) AS last_day
+FROM daily_sales;`,"","LEAD looks forward; FIRST_VALUE and LAST_VALUE read the ends of the frame. LAST_VALUE surprises people: the default frame stops at the current row, so you must widen it as shown. ROWS counts physical rows, while RANGE groups rows with equal ORDER BY values. Month-over-month growth is LAG plus arithmetic."],
+[9,"Intermediate","INSERT SELECT, UPDATE and DELETE with JOIN","Change rows using other tables",`INSERT INTO archive (id, total)
+SELECT id, total FROM orders
+WHERE status = 'closed';
+
+UPDATE orders o
+JOIN customers c ON c.id = o.customer_id
+SET o.region = c.region;
+
+DELETE o FROM orders o
+JOIN customers c ON c.id = o.customer_id
+WHERE c.active = 0;`,"","INSERT INTO ... SELECT copies query results into a table. UPDATE and DELETE can join other tables to decide which rows change. These join forms are MySQL syntax; SQL Server uses FROM, and Postgres uses FROM or USING."],
+[9,"Intermediate","Safe UPDATE and DELETE","Never change blindly",`-- 1. Preview
+SELECT * FROM orders WHERE status = 'test';
+
+-- 2. Run inside a transaction
+BEGIN;
+DELETE FROM orders WHERE status = 'test';
+-- check the row count, then:
+COMMIT;   -- or ROLLBACK;`,"","Write the WHERE as a SELECT first and check the row count, then wrap the change in a transaction so you can roll back. DELETE is logged and filterable; TRUNCATE empties the table fast. Neither replaces a backup. Remove duplicates by numbering with ROW_NUMBER and deleting rn above 1."],
+[10,"Intermediate","CREATE DATABASE and temp tables","Containers and scratch space",`CREATE DATABASE shop;
+
+CREATE TEMPORARY TABLE recent AS
+SELECT * FROM orders
+WHERE order_date >= '2024-01-01';`,"","CREATE DATABASE makes a new database and CREATE SCHEMA a namespace inside one. A temporary table lives for your session and disappears afterwards, which is handy for multi-step work. SQL Server writes it as #recent."],
+[10,"Intermediate","ALTER in detail","Evolve a table safely",`ALTER TABLE users ADD COLUMN phone VARCHAR(15);
+ALTER TABLE users MODIFY COLUMN phone VARCHAR(20);
+ALTER TABLE users DROP COLUMN phone;
+ALTER TABLE users ADD CONSTRAINT uq_email UNIQUE (email);
+ALTER TABLE users DROP CONSTRAINT uq_email;`,"","ALTER can add, change or drop columns and add or remove constraints. Changing a type can fail or lose data if existing values don’t fit, and dropping a column is permanent. MODIFY is MySQL; Postgres uses ALTER COLUMN ... TYPE."],
+[11,"Intermediate","Kinds of keys","Candidate, alternate, surrogate",`-- Candidate key  any column set that could identify a row
+-- Primary key    the candidate you chose
+-- Alternate key  the candidates you did not choose
+-- Composite key  two or more columns together
+-- Surrogate key  system-made id (1, 2, 3...)
+-- Natural key    real-world value (email, ISBN)`,"","Example: email and employee_id could each identify an employee. Choose employee_id as the primary key and email becomes an alternate key (give it UNIQUE). Surrogate keys never change, so most designs use them. Referential integrity means every foreign key must match an existing parent row, so you can’t create an order for a customer that doesn’t exist."],
+[12,"Intermediate","Designing a database","From idea to tables",`-- Entity        Customer, Order, Product
+-- Attributes    name, email, price...
+-- Relationship  Customer places Order
+-- Cardinality   one customer : many orders`,"","Design in steps: find the entities (things you track), list their attributes (columns), decide how they relate, and set the cardinality (one-to-one, one-to-many, many-to-many). Then normalize, and denormalize only with a measured reason."],
+[12,"Advanced","BCNF, snowflake schema, SCD","Beyond 3NF",`-- BCNF              every determinant is a candidate key
+-- Star schema        fact table + flat dimensions
+-- Snowflake schema   dimensions split into sub-tables
+-- SCD Type 1         overwrite the old value
+-- SCD Type 2         add a new row, keep history`,"","BCNF is a stricter 3NF that removes the last odd anomalies. A snowflake schema normalizes dimensions (product to category) to save space at the cost of extra joins; a star schema stays flat for speed. SCD Type 1 overwrites changes, Type 2 keeps full history."],
+[13,"Advanced","SAVEPOINT and concurrency","Partial rollback, blocking",`BEGIN;
+INSERT INTO orders VALUES (1, 100);
+SAVEPOINT sp1;
+INSERT INTO orders VALUES (2, 200);
+ROLLBACK TO sp1;   -- keeps order 1 only
+COMMIT;`,"","SAVEPOINT marks a spot you can roll back to without losing earlier work. Blocking is one transaction waiting on another’s lock. Pessimistic concurrency locks rows up front; optimistic concurrency skips locks but checks a version number at write time and retries on conflict. Read problems: a dirty read sees uncommitted data, a non-repeatable read sees a row change, and a phantom read sees new rows appear."],
+[14,"Advanced","Functions, sequences, synonyms","More reusable objects",`CREATE SEQUENCE order_seq START 1000;
+SELECT NEXT VALUE FOR order_seq;   -- SQL Server
+
+CREATE SYNONYM orders_syn FOR sales.orders;
+DECLARE @t TABLE (id INT);         -- table variable`,"","A scalar function returns one value; a table-valued function returns rows you query like a table. A sequence generates unique numbers independent of any table. A synonym is an alias for another object. A table variable is a small in-memory table scoped to a batch, lighter than a temporary table."],
+[15,"Advanced","Scans, seeks, statistics","Reading a plan",`EXPLAIN ANALYZE
+SELECT * FROM orders
+WHERE customer_id = 7;`,"","A table scan reads every row; an index seek jumps straight to the matching rows. Statistics tell the optimizer how many rows to expect, so stale statistics cause bad plans: refresh them after big loads. Index fragmentation (pages out of order after many changes) slows reads; rebuild or reorganize periodically."],
+[15,"Advanced","Tuning checklist","Habits that keep queries fast",`-- Avoid SELECT *, name the columns
+-- Avoid DISTINCT used to hide a bad join
+-- Join on indexed, same-typed columns
+-- Filter early, aggregate before joining
+-- Prefer EXISTS to IN on big lists
+-- Check CTEs: some engines re-run them`,"","Find the bottleneck first: read the plan for the most expensive step instead of guessing. Parameter sniffing (SQL Server) happens when a cached plan built for one parameter value is slow for another; fixes include recompiling or restructuring the query. Rewriting a query often beats adding an index."],
+[16,"Professional","ETL vs ELT, full vs incremental","How data gets loaded",`-- ETL  transform first, then load
+-- ELT  load raw, transform in the warehouse
+-- Full load         reload everything each run
+-- Incremental load  only new or changed rows`,"","ELT dominates on cloud warehouses (Snowflake, BigQuery, Databricks) because they transform at scale. Full loads are simple but slow on big tables; incremental loads are fast but need a way to know what changed. OLTP systems feed OLAP warehouses through these pipelines."],
+[16,"Professional","CDC and watermark loads","Detect what changed",`SELECT *
+FROM source_orders
+WHERE modified_at > (
+  SELECT MAX(loaded_up_to) FROM etl_watermark
+);`,"","A watermark stores how far the last load got, so the next run picks up only newer rows. Change Data Capture (CDC) reads the database log to catch inserts, updates and deletes, including deletes that timestamps miss. Change Tracking is SQL Server’s lighter built-in version. Apply the changes with MERGE."],
+[16,"Professional","SCD Type 2 in SQL","Keep history of changes",`UPDATE dim_customer
+SET end_date = CURRENT_DATE, is_current = 0
+WHERE id = 5 AND is_current = 1;
+
+INSERT INTO dim_customer
+  (id, city, start_date, end_date, is_current)
+VALUES (5, 'Pune', CURRENT_DATE, NULL, 1);`,"","Close the old row by setting its end date, then insert a new current row. Query is_current = 1 for today’s view, or a date range for any past moment."],
+[16,"Professional","Deduplication and data quality","Clean data on the way in",`SELECT *
+FROM (
+  SELECT *,
+    ROW_NUMBER() OVER (
+      PARTITION BY email
+      ORDER BY modified_at DESC) AS rn
+  FROM staging_customers
+) t
+WHERE rn = 1;`,"","Keep one row per business key with ROW_NUMBER. Add checks for NULLs in required columns, duplicate keys, out-of-range values and orphaned foreign keys, and quarantine bad rows instead of loading them. Reconcile by comparing row counts and sums between source and target."],
+[16,"Professional","Audit columns, late data, errors","Make pipelines trustworthy",`CREATE TABLE fact_orders (
+  id INT,
+  amount DECIMAL(10,2),
+  created_at TIMESTAMP,
+  modified_at TIMESTAMP,
+  load_batch INT
+);`,"","Audit columns (created, modified, batch id) record who and when. Late-arriving data shows up after its date has already loaded, so use a lookback window or reload recent partitions. Handle errors with retries and an error table, and run work in batches so a failure touches only one batch. Partition big tables by date for faster loads and cleanup."]
+];
+const MAP={"What is SQL?":1,"Why do we use SQL?":1,"Tables, rows and columns":1,"Data types":1,"Primary and foreign keys":1,"The five families of SQL":1,"How a query is read":2,SELECT:2,DISTINCT:2,"ORDER BY and LIMIT":2,WHERE:2,"AND, OR":2,LIKE:2,"IN and BETWEEN":2,"IS NULL":2,COALESCE:3,"CASE WHEN":3,"Dates and strings":3,"JSON in SQL":3,"COUNT, SUM, AVG":4,"GROUP BY":4,HAVING:4,ROLLUP:4,"INNER JOIN":5,"LEFT JOIN":5,"Self join":5,"FULL, RIGHT, CROSS":5,"CTE (WITH)":6,"Subquery and EXISTS":6,"Recursive CTE":6,UNION:7,"Window functions":8,"LAG and running totals":8,"Window frames":8,UPDATE:9,"INSERT and DELETE":9,"MERGE (upsert)":9,"CREATE TABLE":10,"ALTER, DROP, TRUNCATE":10,Constraints:11,Normalization:12,"Data warehouse design":12,"Transactions and ACID":13,"Isolation levels and locks":13,Views:14,"Procedures and functions":14,Triggers:14,"Index types":14,Clustering:14,Security:14,"Indexes and EXPLAIN":15,Partitioning:15,"Sharding and replication":15,"Execution plans":15};
+P.forEach(p=>{const n=MAP[p[2]]||(typeof p[0]=="number"&&p[0]);if(n)p[0]=M[n-1]});
+const ORD=["Course map","Data, DBMS and RDBMS","What is SQL?","SQL vs MySQL vs SQL Server","Why do we use SQL?","Tables, rows and columns","Databases and schemas","Data types","Primary and foreign keys","Relationships and ER diagrams","The five families of SQL",
+"SELECT","DISTINCT","WHERE","Comparison, NOT and aliases","AND, OR","IN and BETWEEN","LIKE","IS NULL","ORDER BY and LIMIT","How a query is read",
+"String functions","Numeric and date functions","Dates and strings","CAST and NULL helpers","COALESCE","CASE WHEN","JSON in SQL",
+"COUNT, SUM, AVG","COUNT variants, MIN, MAX","GROUP BY","HAVING","ROLLUP",
+"INNER JOIN","LEFT JOIN","FULL, RIGHT, CROSS","Self join","Multi-table joins","ON versus WHERE, duplicates",
+"Subquery types","Subquery and EXISTS","IN, EXISTS, ANY, ALL","CTE (WITH)","Multiple CTEs","Recursive CTE",
+"UNION","INTERSECT and EXCEPT",
+"Window functions","ROW_NUMBER, RANK, DENSE_RANK, NTILE","LAG and running totals","LEAD, FIRST_VALUE, LAST_VALUE","Window frames",
+"INSERT and DELETE","UPDATE","INSERT SELECT, UPDATE and DELETE with JOIN","MERGE (upsert)","Safe UPDATE and DELETE",
+"CREATE DATABASE and temp tables","CREATE TABLE","ALTER, DROP, TRUNCATE","ALTER in detail",
+"Kinds of keys","Constraints",
+"Designing a database","Normalization","BCNF, snowflake schema, SCD","Data warehouse design",
+"Transactions and ACID","SAVEPOINT and concurrency","Isolation levels and locks",
+"Views","Procedures and functions","Functions, sequences, synonyms","Triggers","Index types","Clustering","Security",
+"Scans, seeks, statistics","Indexes and EXPLAIN","Execution plans","Tuning checklist","Partitioning","Sharding and replication",
+"ETL vs ELT, full vs incremental","CDC and watermark loads","SCD Type 2 in SQL","Deduplication and data quality","Audit columns, late data, errors"];
+const rk=t=>{const i=ORD.indexOf(t);return i<0?999:i};
+const KW=/\b(SELECT|DISTINCT|FROM|WHERE|AND|OR|IN|BETWEEN|LIKE|IS|NOT|NULL|ORDER BY|GROUP BY|HAVING|LIMIT|DESC|ASC|JOIN|LEFT JOIN|ON|AS|UPDATE|SET|CASE|WHEN|THEN|ELSE|END|WITH|OVER|PARTITION BY|COUNT|SUM|AVG|RANK|DENSE_RANK|ROW_NUMBER|LAG|MAX|MIN|DELETE|INSERT|INTO|VALUES|CREATE|TABLE|PRIMARY|KEY|UNION|ALL|FULL|OUTER|EXISTS|INDEX|EXPLAIN|OFFSET|INTERVAL|DAY|INT|VARCHAR|BEGIN|COMMIT|ROLLBACK|GRANT|REVOKE|TO|ALTER|ADD|COLUMN|DROP|TRUNCATE|VIEW|UNIQUE|CHECK|DEFAULT|REFERENCES|FOREIGN|RECURSIVE|ROWS|UNBOUNDED|PRECEDING|CURRENT|ROW|ROLLUP|MERGE|USING|MATCHED|PROCEDURE|TRIGGER|FOR|EACH|AFTER|CLUSTER|RANGE|MATERIALIZED|TRANSACTION|ISOLATION|LEVEL|DECIMAL|COALESCE)\b/g;
+const hl=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/('[^']*')|(--.*)|\b(\d+)\b|\b(LEFT JOIN|ORDER BY|GROUP BY|PARTITION BY|[A-Z_]+)\b/g,(m,a,b,c,d)=>a?`<span class=s>${a}</span>`:b?`<span class=c>${b}</span>`:c?`<span class=n>${c}</span>`:(d&&new RegExp("^("+KW.source.slice(3,-3)+")$").test(d))?`<span class=k>${d}</span>`:m);
+const K=localStorage.getItem("uid")||"";let liked=new Set(),saved=new Set(),filter="All";
+try{liked=new Set(JSON.parse(localStorage.getItem("l"+K)||"[]"));saved=new Set(JSON.parse(localStorage.getItem("s"+K)||"[]"))}catch(e){}
+const store=()=>{try{localStorage.setItem("l"+K,JSON.stringify([...liked]));localStorage.setItem("s"+K,JSON.stringify([...saved]))}catch(e){}};
+const ic={h:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.600-7 10-7 10z"/></svg>',b:'<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>',c:'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>'};
+const feed=document.getElementById("feed"),count=document.getElementById("count");
+function table(r,l){if(!r)return"";if(r.includes("#"))return r.split("#").map(x=>table(x,l)).join("");if(r.includes("~"))[l,r]=r.split("~");const rows=r.split(";").map(x=>x.split("|"));return`<div class=res><small>${l||"Result"}</small><table><tr>${rows[0].map(h=>`<th>${h}</th>`).join("")}</tr>${rows.slice(1).map(x=>`<tr>${x.map(v=>`<td>${v}</td>`).join("")}</tr>`).join("")}</table></div>`}
+function render(){
+ const list=P.map((p,i)=>({p,i})).filter(({p,i})=>filter==="All"||(filter==="Saved"?saved.has(i):p[0]===filter)).sort((a,b)=>Object.keys(COL).indexOf(a.p[0])-Object.keys(COL).indexOf(b.p[0])||rk(a.p[2])-rk(b.p[2]));
+ feed.innerHTML=list.length?list.map(({p,i},n)=>`<section class=post data-i="${i}"><article class=card style="--c:${COL[p[0]]}">
+ <div class=who><div class=av>${p[0].slice(0,2).trim()}</div><div><b>${p[0]}</b><span>${p[1]}</span></div></div>
+ <h2>${p[2]}</h2><p class=tag>${p[3]}</p>
+ ${p[7]?table(p[5],"Sample data")+'<details><summary>Show solution</summary>':''}${p[4]?'<pre><code>'+hl(p[4])+'</code></pre>':''}${p[7]?'':table(p[5])}
+ <p class=why>${p[6]}</p>${p[7]?'</details>':''}
+ <div class=acts><button data-a=l class="${liked.has(i)?"on":""}" aria-label="Like">${ic.h}</button><button data-a=s class="${saved.has(i)?"on":""}" aria-label="Save">${ic.b}</button>${p[4]?'<button data-a=c aria-label="Copy query">'+ic.c+'<span></span></button>':''}</div>
+ ${n===0?'<p class=hint>Scroll for the next lesson</p>':""}</article></section>`).join(""):`<p class=empty>Nothing saved yet. Tap the bookmark on a lesson to keep it here.</p>`;
+ feed.scrollTop=0;upd();
+}
+function upd(){const n=feed.querySelectorAll(".post").length;count.textContent=n?(Math.round(feed.scrollTop/feed.clientHeight)+1)+" / "+n:"0 / 0"}
+feed.addEventListener("scroll",upd);
+feed.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const i=+b.closest(".post").dataset.i,a=b.dataset.a;
+ if(a==="l"){liked.has(i)?liked.delete(i):liked.add(i);b.classList.toggle("on")}
+ if(a==="s"){saved.has(i)?saved.delete(i):saved.add(i);b.classList.toggle("on")}
+ if(a==="c"){try{navigator.clipboard.writeText(P[i][4]);b.querySelector("span").textContent="Copied";setTimeout(()=>b.querySelector("span").textContent="",1200)}catch(x){}}
+ store()});
+feed.addEventListener("dblclick",e=>{const p=e.target.closest(".post");if(!p)return;const i=+p.dataset.i;liked.add(i);p.querySelector("[data-a=l]").classList.add("on");store()});
+const chips=document.getElementById("chips");
+["All",...Object.keys(COL),"Saved"].forEach(t=>{const b=document.createElement("button");b.className="chip";b.textContent=t;b.setAttribute("aria-pressed",t===filter);b.onclick=()=>{filter=t;chips.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));render()};chips.append(b)});
+render();
+</script><script>
+(()=>{
+const FB={apiKey:"",authDomain:"",projectId:"",appId:""}; // optional: paste your free Firebase web config
+const $=id=>document.getElementById(id);
+const done=u=>{localStorage.setItem("uid",u);location.reload()};
+const err=m=>{$("err").textContent=m||""};
+if(!localStorage.getItem("uid"))$("auth").hidden=false;
+if(FB.apiKey)$("g").hidden=false;
+$("guest").onclick=()=>done("guest");
+$("out").onclick=async()=>{try{if(window.__fb)await window.__fb.signOut(window.__au)}catch(e){}localStorage.removeItem("uid");location.reload()};
+$("g").onclick=async()=>{err();
+ try{const V="10.12.2",B="https://www.gstatic.com/firebasejs/"+V+"/";
+  const [A,F]=await Promise.all([import(B+"firebase-app.js"),import(B+"firebase-auth.js")]);
+  const au=F.getAuth(A.initializeApp(FB));window.__fb=F;window.__au=au;
+  const r=await F.signInWithPopup(au,new F.GoogleAuthProvider());done(r.user.uid)}
+ catch(e){err("Google sign-in didn\u2019t finish. Check your connection and try again.")}};
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+})();
+</script>
+</body></html>
