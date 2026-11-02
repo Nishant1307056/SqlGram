@@ -58,7 +58,7 @@ function init(){
  if(pendingOpen) panel.hidden=false;
  const select=$("sqlChallengeSelect");challenges.forEach((c,i)=>{const o=document.createElement("option");o.value=i;o.textContent=c.name+" ("+c.level+")";select.append(o);});
  $("sqlClose").onclick=()=>panel.hidden=true;
- $("sqlRun").onclick=()=>{try{const q=$("sqlEditor").value.trim();if(!q)throw Error("Write a SQL query first.");const out=db.exec(q);runs++;renderResults(out);$("sqlStatus").textContent="Executed successfully · "+runs+" queries run this session. Use Check answer to validate this challenge."; }catch(e){$("sqlStatus").textContent="SQL error: "+e.message;$("sqlResults").innerHTML="";}};
+ $("sqlRun").onclick=()=>{try{const q=$("sqlEditor").value.trim();if(!q)throw Error("Write a SQL query first.");const out=db.exec(q);runs++;renderResults(out);if(matchesExpected(out,challenges[active])){const done=getDone();done.add(active);saveDone(done);$("sqlStatus").textContent="Correct answer! Your query returned the expected columns and rows. Challenge completed.";updateStats();}else{$("sqlStatus").textContent="Incorrect answer. Your query executed, but the output does not match the expected answer. Check your SQL and try again.";} }catch(e){$("sqlStatus").textContent="SQL error: "+e.message;$("sqlResults").innerHTML="";}};
  $("sqlCheck").onclick=checkChallenge;
  $("sqlStarter").onclick=renderChallenge;
  $("sqlClear").onclick=()=>{$("sqlEditor").value="";$("sqlStatus").textContent="Editor cleared.";};
