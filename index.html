@@ -680,6 +680,11 @@ feed.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)retur
 feed.addEventListener("dblclick",e=>{const p=e.target.closest(".post");if(!p)return;const i=+p.dataset.i;liked.add(i);p.querySelector("[data-a=l]").classList.add("on");store()});
 const chips=document.getElementById("chips");
 ["All",...Object.keys(COL),"Liked","Saved","Completed"].forEach(t=>{const b=document.createElement("button");b.className="chip";b.textContent=t;b.setAttribute("aria-pressed",t===filter);b.onclick=()=>{filter=t;chips.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));render()};chips.append(b)});
+window.__setSqlGramFilter = t => {
+  filter=t;
+  chips.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x.textContent===filter));
+  render();
+};
 render();
 </script><script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -721,9 +726,8 @@ $("saveProfile").addEventListener("click",async()=>{
   catch(e){$("profileMsg").textContent="Could not update profile. Please try again.";}
 });
 document.querySelectorAll(".profileStats button").forEach(b=>b.addEventListener("click",()=>{
-  filter=b.dataset.filter;
-  chips.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x.textContent===filter));
-  render();$("profilePanel").hidden=true;
+  window.__setSqlGramFilter(b.dataset.filter);
+  $("profilePanel").hidden=true;
 }));
 function setAuthMode() {
   $("emailAction").textContent = creatingAccount ? "Create account" : "Sign in with email";
