@@ -52,7 +52,7 @@ summary{margin:6px 12px;padding:10px 14px;border:1px solid var(--c);color:var(--
 #err{color:#d33;min-height:1.2em;font-size:14px}
 #profilePanel{position:fixed;inset:0;z-index:40;background:var(--bg);padding:24px;overflow:auto;display:grid;place-items:center}
 #profilePanel[hidden],#settingsPanel[hidden]{display:none!important}
-#settingsPanel{position:fixed;inset:0;z-index:40;background:var(--bg);padding:24px;overflow:auto;display:grid;place-items:center}
+#developerPanel{position:fixed;inset:0;z-index:40;background:var(--bg);padding:24px;overflow:auto;display:grid;place-items:center}\n#developerPanel[hidden]{display:none!important}\n#settingsPanel{position:fixed;inset:0;z-index:40;background:var(--bg);padding:24px;overflow:auto;display:grid;place-items:center}
 #themeChoice{padding:13px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
 .menuToggle{width:40px;height:40px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-size:22px;cursor:pointer;flex:none}
 header{gap:8px}header h1{flex:1;padding-left:12px}
@@ -91,6 +91,7 @@ header{gap:8px}header h1{flex:1;padding-left:12px}
   <button data-menu="Saved">▮ <span>Saved lessons</span></button>
   <button data-menu="Completed">✓ <span>Completed lessons</span></button>
   <div class="drawerDivider"></div><button data-menu="settings">⚙ <span>Settings</span></button>
+  <button data-menu="developer">ⓘ <span>Developer info</span></button>
  </nav>
  <button class="drawerSignout" id="out">↪ <span>Sign out</span></button>
 </aside>
@@ -111,6 +112,13 @@ header{gap:8px}header h1{flex:1;padding-left:12px}
 <button data-filter="Saved"><strong id="savedCount">0</strong><span>Saved</span></button>
 <button data-filter="Completed"><strong id="completedCount">0</strong><span>Completed</span></button>
 </div>
+</div></section>
+<section id="developerPanel" hidden><div class="profileCard">
+ <div class="profileTop"><h2>Developer info</h2><button class="lnk" id="closeDeveloper">Close</button></div>
+ <p><strong>App_Owner :</strong> Nishant Singh</p>
+ <p><strong>Dev_Name :</strong> Nishant Singh</p>
+ <p><strong>Organisation :</strong> Pookie2Tech</p>
+ <p><strong>Support :</strong> <a href="mailto:1307056@gmail.com">1307056@gmail.com</a></p>
 </div></section>
 <section id="settingsPanel" hidden><div class="profileCard">
  <div class="profileTop"><h2>Settings</h2><button class="lnk" id="closeSettings">Close</button></div>
@@ -757,8 +765,8 @@ function refreshProfile() {
 function closeDrawer(){$("drawer").classList.remove("open");$("drawer").setAttribute("aria-hidden","true");$("drawerShade").hidden=true;$("menuBtn").setAttribute("aria-expanded","false");}
 $("menuBtn").addEventListener("click",()=>{refreshProfile();$("drawer").classList.add("open");$("drawer").setAttribute("aria-hidden","false");$("drawerShade").hidden=false;$("menuBtn").setAttribute("aria-expanded","true");});
 $("closeDrawer").addEventListener("click",closeDrawer);$("drawerShade").addEventListener("click",closeDrawer);
-document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",()=>{const a=b.dataset.menu;closeDrawer();if(a==="profile"){refreshProfile();$("profilePanel").hidden=false;}else if(a==="settings"){$("settingsPanel").hidden=false;}else window.__setSqlGramFilter(a);}));
-$("closeSettings").addEventListener("click",()=>$("settingsPanel").hidden=true);
+document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",()=>{const a=b.dataset.menu;closeDrawer();if(a==="profile"){refreshProfile();$("profilePanel").hidden=false;}else if(a==="settings"){$("settingsPanel").hidden=false;}else if(a==="developer"){$("developerPanel").hidden=false;}else window.__setSqlGramFilter(a);}));
+$("closeSettings").addEventListener("click",()=>$("settingsPanel").hidden=true);\n$("closeDeveloper").addEventListener("click",()=>$("developerPanel").hidden=true);
 const savedTheme=localStorage.getItem("sqlgram-theme")||"system";$("themeChoice").value=savedTheme;
 function applyTheme(t){if(t==="system")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",t);}
 applyTheme(savedTheme);$("themeChoice").addEventListener("change",e=>{localStorage.setItem("sqlgram-theme",e.target.value);applyTheme(e.target.value);});
