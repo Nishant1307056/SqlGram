@@ -222,6 +222,37 @@ function saveQuery(){
  const key="sqlgram-queries-"+(localStorage.getItem("uid")||"guest");
  const items=JSON.parse(localStorage.getItem(key)||"[]");items.unshift({name,sql:$("sqlEditor").value});localStorage.setItem(key,JSON.stringify(items.slice(0,30)));renderSaved();
 }
+
+function loadCustomQuestions(){
+ try{const a=JSON.parse(localStorage.getItem("sqlgram-custom-questions")||"[]");a.forEach(q=>{if(q&&!challengePool.some(c=>c.id===q.id))challengePool.push(q);});$("sqlCustomCount").textContent=a.length+" custom questions on this device.";}catch(e){}
+}
+function addCustomQuestion(){
+ const level=prompt("Difficulty: Easy, Intermediate or Hard","Intermediate");if(!["Easy","Intermediate","Hard"].includes(level))return;
+ const promptText=prompt("Enter the learner question");if(!promptText)return;
+ const solution=prompt("Enter reference SQL");if(!solution)return;
+ try{db.exec(solution);}catch(e){alert("Invalid SQL: "+e.message);return;}
+ const q={id:"custom-"+Date.now(),level,prompt:promptText,solution};challengePool.push(q);
+ const a=JSON.parse(localStorage.getItem("sqlgram-custom-questions")||"[]");a.push(q);localStorage.setItem("sqlgram-custom-questions",JSON.stringify(a));
+ $("sqlCustomCount").textContent=a.length+" custom questions on this device.";renderConceptOptions();alert("Question added.");
+}
+function exportQuestionBank(){
+ const data=challengePool.map(q=>({id:q.id,level:q.level,prompt:q.prompt,solution:q.solution}));
+ const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+ const a=document.createElement("a");a.href=url;a.download="sqlgram-question-bank.json";a.click();URL.revokeObjectURL(url);
+}
+function importQuestionBank(file){
+ const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(reader.result);if(!Array.isArray(data))throw Error("Expected JSON array");
+ const saved=JSON.parse(localStorage.getItem("sqlgram-custom-questions")||"[]");let count=0;
+ data.forEach((q,i)=>{if(!["Easy","Intermediate","Hard"].includes(q.level)||!q.prompt||!q.solution)return;db.exec(q.solution);if(challengePool.some(c=>c.prompt===q.prompt))return;const item={id:"import-"+Date.now()+"-"+i,level:q.level,prompt:String(q.prompt),solution:String(q.solution)};challengePool.push(item);saved.push(item);count++;});
+ localStorage.setItem("sqlgram-custom-questions",JSON.stringify(saved));$("sqlCustomCount").textContent=saved.length+" custom questions on this device.";renderConceptOptions();alert(count+" questions imported.");
+ }catch(e){alert("Import failed: "+e.message);}};reader.readAsText(file);
+}
+function renderGamification(){
+ const days=[...new Set(practiceMetrics.recent.map(x=>new Date(x.at).toDateString()))];let streak=0,d=new Date();
+ while(days.includes(d.toDateString())){streak++;d.setDate(d.getDate()-1);}
+ const best=Number(localStorage.getItem("sqlgram-best-score")||0);
+ $("sqlGamification").innerHTML=[["Current streak",streak+" days"],["Best timed score",best+" correct"],["Practice days",days.length]].map(x=>"<div class='sqlMetric'><span>"+x[0]+"</span><strong>"+x[1]+"</strong></div>").join("");
+}
 function renderSaved(){const key="sqlgram-queries-"+(localStorage.getItem("uid")||"guest");const items=JSON.parse(localStorage.getItem(key)||"[]");$("sqlSaved").innerHTML=items.length?items.map((x,i)=>"<button class='sqlAction' data-query='"+i+"'>"+escapeHtml(x.name)+"</button>").join(""):"<span class='sqlIntro'>Your saved queries will appear here.</span>";}
 function openLab(){ const panel=$("sqlLab"); if(panel) panel.hidden=false; pendingOpen=true; closeDrawerSafe(); }
 function closeDrawerSafe(){const d=$("drawer"),s=$("drawerShade"),m=$("menuBtn");if(d){d.classList.remove("open");d.setAttribute("aria-hidden","true");}if(s)s.hidden=true;if(m)m.setAttribute("aria-expanded","false");}
