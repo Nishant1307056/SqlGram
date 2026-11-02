@@ -49,13 +49,40 @@ summary{margin:6px 12px;padding:10px 14px;border:1px solid var(--c);color:var(--
 .gbtn,.pbtn{padding:14px;border-radius:12px;border:1px solid var(--line);font:600 16px inherit;font-family:inherit;cursor:pointer}
 .gbtn{background:var(--card);color:var(--ink)}.pbtn{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .lnk{background:none;border:0;color:var(--mute);font:500 13px inherit;font-family:inherit;cursor:pointer;text-decoration:underline}
-#err{color:#d33;min-height:1.2em;font-size:14px}.ab .or{margin:2px 0}.ab button:disabled{opacity:.55}.acts button[data-a=d]{font-size:13px}.acts button[data-a=d].on{color:#2a9d3f;font-weight:700}
+#err{color:#d33;min-height:1.2em;font-size:14px}
+#profilePanel{position:fixed;inset:0;z-index:40;background:var(--bg);padding:24px;overflow:auto;display:grid;place-items:center}
+#profilePanel[hidden]{display:none!important}.profileCard{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;display:grid;gap:14px}
+.profileTop{display:flex;justify-content:space-between;align-items:center}.profileTop h2{font-size:23px}
+.profileAvatar{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:#3b6cf6;color:white;font-size:26px;font-weight:700}
+.profileEmail{color:var(--mute);font-size:14px;overflow-wrap:anywhere}
+.profileCard label{font-size:13px;color:var(--mute);margin-bottom:-9px}
+.profileCard input{width:100%;padding:13px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+.profileCard h3{font-size:17px;margin-top:8px}.profileStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.profileStats button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:12px 4px;display:grid;gap:4px;cursor:pointer}
+.profileStats strong{font-size:22px}.profileStats span{font-size:12px;color:var(--mute)}
+#profileMsg{font-size:13px;color:#2a9d3f;min-height:1em}.ab .or{margin:2px 0}.ab button:disabled{opacity:.55}.acts button[data-a=d]{font-size:13px}.acts button[data-a=d].on{color:#2a9d3f;font-weight:700}
 </style></head><body>
 <div class="app">
-<header><h1>Learning SQL from Scratch</h1><span><span id="count"></span> <button class="lnk" id="out">Sign out</button></span></header>
+<header><h1>Learning SQL from Scratch</h1><span><span id="count"></span> <button class="lnk" id="profileBtn">Profile</button> <button class="lnk" id="out">Sign out</button></span></header>
 <nav class="chips" id="chips" aria-label="Topics"></nav>
 <main id="feed" tabindex="0"></main>
 </div>
+<section id="profilePanel" hidden>
+<div class="profileCard">
+<div class="profileTop"><h2>Your profile</h2><button class="lnk" id="closeProfile">Close</button></div>
+<div class="profileAvatar" id="profileAvatar">S</div>
+<p class="profileEmail" id="profileEmail"></p>
+<label for="displayName">Display name</label>
+<input id="displayName" type="text" maxlength="60" placeholder="Your name">
+<button class="pbtn" id="saveProfile">Save profile</button>
+<p id="profileMsg" role="status"></p>
+<h3>Your learning activity</h3>
+<div class="profileStats">
+<button data-filter="Liked"><strong id="likedCount">0</strong><span>Liked</span></button>
+<button data-filter="Saved"><strong id="savedCount">0</strong><span>Saved</span></button>
+<button data-filter="Completed"><strong id="completedCount">0</strong><span>Completed</span></button>
+</div>
+</div></section>
 <div id="auth"><div class="ab">
 <h1>SqlGram</h1><p>Sign in to access lessons and sync your learning across devices.</p>
 <button class="gbtn" id="g">Continue with Google</button>
@@ -656,7 +683,7 @@ const chips=document.getElementById("chips");
 render();
 </script><script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -675,6 +702,29 @@ let creatingAccount = false;
 let syncQueue = Promise.resolve();
 
 function showError(message) { $("err").textContent = message || ""; }
+function refreshProfile() {
+  const user=auth.currentUser;
+  if(!user)return;
+  $("profileEmail").textContent=user.email||"";
+  $("displayName").value=user.displayName||"";
+  $("profileAvatar").textContent=(user.displayName||user.email||"S").trim().charAt(0).toUpperCase();
+  $("likedCount").textContent=JSON.parse(localStorage.getItem("l"+user.uid)||"[]").length;
+  $("savedCount").textContent=JSON.parse(localStorage.getItem("s"+user.uid)||"[]").length;
+  $("completedCount").textContent=JSON.parse(localStorage.getItem("d"+user.uid)||"[]").length;
+}
+$("profileBtn").addEventListener("click",()=>{refreshProfile();$("profilePanel").hidden=false;});
+$("closeProfile").addEventListener("click",()=>{$("profilePanel").hidden=true;});
+$("saveProfile").addEventListener("click",async()=>{
+  const name=$("displayName").value.trim();
+  if(!name){$("profileMsg").textContent="Please enter a display name.";return;}
+  try{await updateProfile(auth.currentUser,{displayName:name});refreshProfile();$("profileMsg").textContent="Profile updated successfully.";}
+  catch(e){$("profileMsg").textContent="Could not update profile. Please try again.";}
+});
+document.querySelectorAll(".profileStats button").forEach(b=>b.addEventListener("click",()=>{
+  filter=b.dataset.filter;
+  chips.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x.textContent===filter));
+  render();$("profilePanel").hidden=true;
+}));
 function setAuthMode() {
   $("emailAction").textContent = creatingAccount ? "Create account" : "Sign in with email";
   $("password").autocomplete = creatingAccount ? "new-password" : "current-password";
@@ -738,6 +788,8 @@ onAuthStateChanged(auth, async user => {
     localStorage.removeItem("uid");
     $("auth").hidden = false;
     $("out").hidden = true;
+    $("profileBtn").hidden = true;
+    $("profilePanel").hidden = true;
     return;
   }
   const previousUid = localStorage.getItem("uid");
@@ -749,6 +801,8 @@ onAuthStateChanged(auth, async user => {
   localStorage.setItem("uid", user.uid);
   $("auth").hidden = true;
   $("out").hidden = false;
+  $("profileBtn").hidden = false;
+  refreshProfile();
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
     const data = snap.exists() ? snap.data() : {};
