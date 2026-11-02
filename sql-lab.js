@@ -30,20 +30,30 @@ function setupDb(){
  db.run("CREATE TABLE employees (employee_id INTEGER PRIMARY KEY, first_name TEXT NOT NULL, last_name TEXT NOT NULL, email TEXT, job_title TEXT, manager_id INTEGER, hire_date TEXT, salary REAL, commission_pct REAL, department_id INTEGER, FOREIGN KEY(department_id) REFERENCES departments(department_id));");
  db.run("INSERT INTO employees VALUES (100,'Steven','King','SKING','President',NULL,'2003-06-17',24000,NULL,10),(101,'Neena','Kochhar','NKOCHHAR','Administration VP',100,'2005-09-21',17000,NULL,10),(102,'Lex','De Haan','LDEHAAN','Administration VP',100,'2001-01-13',17000,NULL,10),(103,'Alexander','Hunold','AHUNOLD','IT Manager',102,'2006-01-03',9000,NULL,60),(104,'Bruce','Ernst','BERNST','Programmer',103,'2007-05-21',6000,NULL,60),(105,'David','Austin','DAUSTIN','Programmer',103,'2005-06-25',4800,NULL,60),(106,'Valli','Pataballa','VPATABAL','Programmer',103,'2006-02-05',4800,NULL,60),(107,'Diana','Lorentz','DLORENTZ','Programmer',103,'2007-02-07',4200,NULL,60),(108,'Nancy','Greenberg','NGREENBE','Finance Manager',101,'2002-08-17',12000,NULL,70),(109,'Daniel','Faviet','DFAVIET','Accountant',108,'2002-08-16',9000,NULL,70),(110,'John','Chen','JCHEN','Accountant',108,'2005-09-28',8200,NULL,70),(114,'Den','Raphaely','DRAPHAEL','Purchasing Manager',100,'2002-12-07',11000,NULL,30),(115,'Alexander','Khoo','AKHOO','Purchasing Clerk',114,'2003-05-18',3100,NULL,30),(120,'Matthew','Weiss','MWEISS','Shipping Manager',100,'2004-07-18',8000,NULL,50),(121,'Adam','Fripp','AFRIPP','Shipping Manager',100,'2005-04-10',8200,NULL,50),(145,'John','Russell','JRUSSEL','Sales Manager',100,'2004-10-01',14000,0.4,80),(146,'Karen','Partners','KPARTNER','Sales Representative',145,'2005-01-05',13500,0.3,80),(147,'Alberto','Errazuriz','AERRAZUR','Sales Representative',145,'2005-03-10',12000,0.3,80),(148,'Gerald','Cambrault','GCAMBRA','Sales Representative',145,'2007-10-15',11000,0.3,80),(149,'Eleni','Zlotkey','EZLOTKEY','Sales Representative',145,'2008-01-29',10500,0.2,80),(150,'Peter','Tucker','PTUCKER','Sales Representative',145,'2005-01-30',10000,0.3,80),(151,'David','Bernstein','DBERNSTE','Sales Representative',145,'2005-03-24',9500,0.25,80),(152,'Peter','Hall','PHALL','Sales Representative',145,'2005-08-20',9000,0.25,80),(153,'Christopher','Olsen','COLSEN','Sales Representative',145,'2006-03-30',8000,0.2,80),(154,'Nanette','Cambrault','NCAMBRA','Sales Representative',145,'2006-12-09',7500,0.2,80),(155,'Oliver','Tuvault','OTUVAULT','Sales Representative',145,'2007-11-23',7000,0.15,80),(156,'Janette','King','JKING','Sales Representative',145,'2004-01-30',10000,0.35,80),(157,'Patrick','Sully','PSULLY','Sales Representative',145,'2004-03-04',9500,0.35,80),(158,'Allan','McEwen','AMCEWEN','Sales Representative',145,'2004-08-01',9000,0.35,80),(159,'Lindsey','Smith','LSMITH','Sales Representative',145,'2005-03-10',8000,0.3,80),(160,'Louise','Doran','LDORAN','Sales Representative',145,'2005-12-15',7500,0.3,80),(161,'Sarath','Sewall','SSEWALL','Sales Representative',145,'2006-11-03',7000,0.25,80),(162,'Clara','Vishney','CVISHNEY','Sales Representative',145,'2005-11-11',10500,0.25,80),(163,'Danielle','Greene','DGREENE','Sales Representative',145,'2007-03-19',9500,0.15,80),(164,'Matthew','Marvins','MMARVINS','Sales Representative',145,'2008-01-24',7200,0.1,80),(165,'David','Lee','DLEE','Sales Representative',145,'2008-02-23',6800,0.1,80),(166,'Sundar','Ande','SANDE','Sales Representative',145,'2008-03-24',6400,0.1,80),(167,'Amit','Banda','ABANDA','Sales Representative',145,'2008-04-21',6200,0.1,80);");
 }
+let lastGeneratedKey="";
 function nextChallenge(level){
  const choices=challengePool.filter(c=>c.level===level);
- let used=usedChallenges[level];
- let remaining=choices.filter(c=>!used.includes(c.id));
- if(!remaining.length){used=[];usedChallenges[level]=used;remaining=choices.slice();}
- const pick=remaining[Math.floor(Math.random()*remaining.length)];
- usedChallenges[level].push(pick.id);activeChallenge=pick;expectedResult=db.exec(pick.solution);
- $("sqlChallenge").innerHTML="<strong>"+level+" challenge</strong><p>"+escapeHtml(pick.prompt)+"</p>";
- $("sqlEditor").value="";
- $("sqlResults").innerHTML="<p class='sqlIntro'>Run your SQL to inspect the result.</p>";
+ if(!choices.length)return;
+ let pick,prompt,solution,key,attempts=0;
+ do{
+  pick=choices[Math.floor(Math.random()*choices.length)];prompt=pick.prompt;solution=pick.solution;
+  if(pick.id==="e1"){const n=5000+Math.floor(Math.random()*15000);prompt=prompt.replace("more than 10000","more than "+n);solution=solution.replace("> 10000","> "+n);}
+  if(pick.id==="e2"){const ids=[10,30,50,60,70,80],n=ids[Math.floor(Math.random()*ids.length)];prompt=prompt.replace("department 60","department "+n);solution=solution.replace("= 60","= "+n);}
+  if(pick.id==="e4"){const year=2003+Math.floor(Math.random()*7);prompt=prompt.replace("1 January 2007","1 January "+year);solution=solution.replace("2007-01-01",year+"-01-01");}
+  if(pick.id==="i2"){const countries=["USA","UK","India"],country=countries[Math.floor(Math.random()*countries.length)];prompt=prompt.replace("in India","in "+country);solution=solution.replace("l.country='India'","l.country='"+country+"'");}
+  if(pick.id==="i3"){const factor=[0.8,0.9,1,1.1,1.2,1.3][Math.floor(Math.random()*6)];prompt=prompt.replace("more than the average salary","more than "+Math.round(factor*100)+"% of the average salary");solution=solution.replace("AVG(salary)","AVG(salary)*"+factor);}
+  if(pick.id==="i5"){const n=4000+Math.floor(Math.random()*9000);prompt=prompt.replace("greater than 9000","greater than "+n);solution=solution.replace("AVG(salary)>9000","AVG(salary)>"+n);}
+  if(pick.id==="h2"){const factor=[0.8,0.9,1,1.1,1.2,1.3][Math.floor(Math.random()*6)];prompt=prompt.replace("above their own department's average","at least "+Math.round(factor*100)+"% of their own department's average");solution=solution.replace("e.salary>a.avg_salary","e.salary>=a.avg_salary*"+factor);}
+  key=pick.id+"|"+prompt;attempts++;
+ }while(key===lastGeneratedKey&&attempts<20);
+ lastGeneratedKey=key;activeChallenge={...pick,prompt,solution};expectedResult=db.exec(solution);
+ $("sqlChallenge").innerHTML="<strong>"+level+" challenge</strong><p>"+escapeHtml(prompt)+"</p>";
+ $("sqlEditor").value="";$("sqlResults").innerHTML="<p class='sqlIntro'>Run a query to inspect the result.</p>";
  $("sqlStatus").className="sqlStatus";
- $("sqlStatus").textContent="New random question. Write your SQL and run it to see output and validation.";
+ $("sqlStatus").textContent="New randomized question generated. You can keep practising continuously; there is no question-count limit.";
  updateStats();
 }
+
 function getDone(){const k="sqlgram-practice-"+(localStorage.getItem("uid")||"guest");return new Set(JSON.parse(localStorage.getItem(k)||"[]"));}
 function saveDone(done){const k="sqlgram-practice-"+(localStorage.getItem("uid")||"guest");localStorage.setItem(k,JSON.stringify([...done]));}
 function normalizeRows(rows){return rows.map(row=>JSON.stringify(row)).sort();}
