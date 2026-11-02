@@ -672,7 +672,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const $ = id => document.getElementById(id);
 let creatingAccount = false;
-let syncing = false;
+let syncQueue = Promise.resolve();
 
 function showError(message) { $("err").textContent = message || ""; }
 function setAuthMode() {
@@ -718,20 +718,19 @@ $("g").addEventListener("click", async () => {
 });
 $("out").addEventListener("click", async () => { await signOut(auth); });
 
-window.__syncSqlGram = async () => {
+window.__syncSqlGram = () => {
   const user = auth.currentUser;
-  if (!user || syncing) return;
-  syncing = true;
-  try {
-    const key = user.uid;
-    await setDoc(doc(db, "users", key), {
-      liked: JSON.parse(localStorage.getItem("l"+key) || "[]"),
-      saved: JSON.parse(localStorage.getItem("s"+key) || "[]"),
-      completed: JSON.parse(localStorage.getItem("d"+key) || "[]"),
-      updatedAt: new Date().toISOString()
-    }, { merge: true });
-  } catch (e) { console.error("SqlGram sync failed", e); }
-  finally { syncing = false; }
+  if (!user) return;
+  const key = user.uid;
+  const payload = {
+    liked: JSON.parse(localStorage.getItem("l"+key) || "[]"),
+    saved: JSON.parse(localStorage.getItem("s"+key) || "[]"),
+    completed: JSON.parse(localStorage.getItem("d"+key) || "[]"),
+    updatedAt: new Date().toISOString()
+  };
+  syncQueue = syncQueue.then(() => setDoc(doc(db, "users", key), payload, { merge: true }))
+    .catch(e => console.error("SqlGram sync failed", e));
+  return syncQueue;
 };
 
 onAuthStateChanged(auth, async user => {
