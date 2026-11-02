@@ -73,7 +73,56 @@ const questionDecks={Easy:[],Intermediate:[],Hard:[]};
 const lastQuestionByLevel={Easy:null,Intermediate:null,Hard:null};
 const seenQuestionIds={Easy:new Set(),Intermediate:new Set(),Hard:new Set()};
 let historyReady=false, historySaveQueue=Promise.resolve(), activeQuestionRecorded=false;
+const emptyMetrics=()=>({attempts:0,correct:0,incorrect:0,uniqueQuestions:[],byLevel:{Easy:{attempts:0,correct:0},Intermediate:{attempts:0,correct:0},Hard:{attempts:0,correct:0}},byConcept:{},recent:[]});
+let practiceMetrics=emptyMetrics();
+const conceptByQuestion={
+ e1:"Filtering & sorting",e2:"Filtering & sorting",e3:"DISTINCT",e4:"Date filtering",e5:"GROUP BY & aggregation",
+ e6:"NULL handling",e7:"Pattern matching",e8:"String operations",e9:"Aggregate functions",e10:"Sorting",e11:"Date filtering",e12:"DISTINCT",e13:"NULL handling",e14:"DISTINCT",e15:"LIMIT & sorting",e16:"Filtering",e17:"GROUP BY & aggregation",
+ i1:"LEFT JOIN",i2:"Multi-table JOIN",i3:"Scalar subqueries",i4:"JOIN & aggregation",i5:"HAVING",i6:"JOIN",i7:"HAVING",i8:"Calculated columns",i9:"Self JOIN",i10:"Multi-table aggregation",i11:"JOIN & aggregation",i12:"Correlated subqueries",i13:"Multi-table JOIN",i14:"Anti JOIN",i15:"GROUP BY & aggregation",i16:"MIN & grouping",i17:"Date aggregation",
+ h1:"Window ranking",h2:"CTE & aggregation",h3:"Self JOIN",h4:"Nested subqueries",h5:"Window ranking",h6:"ROW_NUMBER",h7:"Window running totals",h8:"CTE & scalar aggregation",h9:"Multiple CTEs",h10:"Self JOIN pairs",h11:"Window aggregates",h12:"RANK",h13:"DENSE_RANK",h14:"CTE & ranking",h15:"NTILE",h16:"CTE & grouping",h17:"Correlated subqueries"
+};
+function normalizeMetrics(raw){
+ const base=emptyMetrics();if(!raw||typeof raw!=="object")return base;
+ for(const k of ["attempts","correct","incorrect"])base[k]=Number(raw[k])||0;
+ base.uniqueQuestions=Array.isArray(raw.uniqueQuestions)?raw.uniqueQuestions:[];
+ for(const level of Object.keys(base.byLevel)){const x=raw.byLevel?.[level]||{};base.byLevel[level]={attempts:Number(x.attempts)||0,correct:Number(x.correct)||0};}
+ base.byConcept=raw.byConcept&&typeof raw.byConcept==="object"?raw.byConcept:{};
+ base.recent=Array.isArray(raw.recent)?raw.recent.slice(0,12):[];
+ return base;
+}
+function practicePayload(){return {seenByLevel:{Easy:[...seenQuestionIds.Easy],Intermediate:[...seenQuestionIds.Intermediate],Hard:[...seenQuestionIds.Hard]},metrics:practiceMetrics};}
+function persistMetrics(){
+ localStorage.setItem("sqlgram-metrics-"+(localStorage.getItem("uid")||"guest"),JSON.stringify(practiceMetrics));
+ const payload=practicePayload();
+ if(window.__sqlGramPracticeHistory)historySaveQueue=historySaveQueue.then(()=>window.__sqlGramPracticeHistory.save(payload)).catch(e=>console.warn("Could not sync practice metrics.",e));
+ renderDashboard();
+}
+function recordAttempt(challenge,isCorrect){
+ const level=challenge.level,concept=conceptByQuestion[challenge.id]||"Other";
+ practiceMetrics.attempts++;
+ if(isCorrect){practiceMetrics.correct++;practiceMetrics.byLevel[level].correct++;}
+ else{practiceMetrics.incorrect++;}
+ practiceMetrics.byLevel[level].attempts++;
+ if(!practiceMetrics.uniqueQuestions.includes(challenge.id))practiceMetrics.uniqueQuestions.push(challenge.id);
+ const item={id:challenge.id,level,concept,prompt:challenge.prompt.slice(0,110),correct:isCorrect,at:Date.now()};
+ practiceMetrics.recent.unshift(item);practiceMetrics.recent=practiceMetrics.recent.slice(0,12);
+ const c=practiceMetrics.byConcept[concept]||{attempts:0,correct:0};
+ c.attempts++;if(isCorrect)c.correct++;practiceMetrics.byConcept[concept]=c;
+ persistMetrics();
+}
+function renderDashboard(){
+ const m=practiceMetrics,accuracy=m.attempts?Math.round(m.correct/m.attempts*100):0;
+ const cards=[["Questions attempted",m.attempts],["Correct answers",m.correct],["Incorrect attempts",m.incorrect],["Overall accuracy",accuracy+"%"]];
+ $("sqlMetricGrid").innerHTML=cards.map(([label,value])=>"<div class='sqlMetric'><span>"+label+"</span><strong>"+value+"</strong></div>").join("");
+ $("sqlLevelProgress").innerHTML=["Easy","Intermediate","Hard"].map(level=>{const x=m.byLevel[level],pct=x.attempts?Math.round(x.correct/x.attempts*100):0;return "<div class='sqlLevelRow'><div><strong>"+level+"</strong><span>"+x.correct+" / "+x.attempts+" correct · "+pct+"%</span></div><div class='sqlProgressTrack'><i style='width:"+pct+"%'></i></div></div>";}).join("");
+ const weak=Object.entries(m.byConcept).filter(([,x])=>x.attempts>=2).sort((a,b)=>(a[1].correct/a[1].attempts)-(b[1].correct/b[1].attempts)).slice(0,4);
+ $("sqlWeakConcepts").innerHTML=weak.length?weak.map(([name,x])=>"<div class='sqlMiniRow'><span>"+escapeHtml(name)+"</span><strong>"+Math.round(x.correct/x.attempts*100)+"% accuracy</strong></div>").join(""):"<p class='sqlIntro'>Concept insights will appear after you practise a few questions.</p>";
+ $("sqlRecentActivity").innerHTML=m.recent.length?m.recent.slice(0,5).map(x=>"<div class='sqlMiniRow'><span>"+escapeHtml(x.level+" · "+x.concept)+"</span><strong class='"+(x.correct?"sqlGood":"sqlBad")+"'>"+(x.correct?"Correct":"Incorrect")+"</strong></div>").join(""):"<p class='sqlIntro'>Your recent attempts will appear here.</p>";
+}
+
 function historyStorageKey(){return "sqlgram-practice-history-"+(localStorage.getItem("uid")||"guest");}
+function loadLocalMetrics(){try{practiceMetrics=normalizeMetrics(JSON.parse(localStorage.getItem("sqlgram-metrics-"+(localStorage.getItem("uid")||"guest"))||"null"));}catch(e){practiceMetrics=emptyMetrics();}}
+
 function localHistory(){
  try{return JSON.parse(localStorage.getItem(historyStorageKey())||"{}");}catch(e){return {};}
 }
@@ -84,17 +133,21 @@ function persistLocalHistory(){
 }
 async function loadPracticeHistory(){
  const local=localHistory();
+ loadLocalMetrics();
  for(const level of ["Easy","Intermediate","Hard"]){
   seenQuestionIds[level]=new Set(Array.isArray(local[level])?local[level]:[]);
  }
  try{
   const cloud=window.__sqlGramPracticeHistory?await window.__sqlGramPracticeHistory.load():{};
   for(const level of ["Easy","Intermediate","Hard"]){
-   if(Array.isArray(cloud[level])) for(const id of cloud[level]) seenQuestionIds[level].add(id);
+   if(Array.isArray(cloud.seenByLevel?.[level])) for(const id of cloud.seenByLevel[level]) seenQuestionIds[level].add(id);
   }
+  if(cloud.metrics)practiceMetrics=normalizeMetrics(cloud.metrics);
   historyReady=true;
-  const merged=persistLocalHistory();
-  if(window.__sqlGramPracticeHistory) await window.__sqlGramPracticeHistory.save(merged);
+  persistLocalHistory();
+  localStorage.setItem("sqlgram-metrics-"+(localStorage.getItem("uid")||"guest"),JSON.stringify(practiceMetrics));
+  if(window.__sqlGramPracticeHistory) await window.__sqlGramPracticeHistory.save(practicePayload());
+  renderDashboard();
  }catch(e){
   console.warn("SqlGram cloud question history unavailable; using this device's history.",e);
   historyReady=true;
@@ -102,7 +155,8 @@ async function loadPracticeHistory(){
 }
 function recordQuestion(level,id){
  seenQuestionIds[level].add(id);
- const data=persistLocalHistory();
+ persistLocalHistory();
+ const data=practicePayload();
  if(window.__sqlGramPracticeHistory){
   historySaveQueue=historySaveQueue.then(()=>window.__sqlGramPracticeHistory.save(data)).catch(e=>console.warn("Could not sync SQL question history to cloud.",e));
  }
@@ -123,7 +177,7 @@ function nextChallenge(level){
    unseen=choices;
    persistLocalHistory();
    if(window.__sqlGramPracticeHistory){
-    const reset={Easy:[...seenQuestionIds.Easy],Intermediate:[...seenQuestionIds.Intermediate],Hard:[...seenQuestionIds.Hard]};
+    const reset=practicePayload();
     historySaveQueue=historySaveQueue.then(()=>window.__sqlGramPracticeHistory.save(reset)).catch(e=>console.warn("Could not sync SQL question cycle.",e));
    }
   }
@@ -162,13 +216,15 @@ function validateCurrentQuery(){
   const q=$("sqlEditor").value.trim();if(!q)throw Error("Write a SQL query first.");
   const result=db.exec(q);runs++;renderResults(result);
   if(!activeQuestionRecorded&&activeChallenge){recordQuestion(activeChallenge.level,activeChallenge.id);activeQuestionRecorded=true;const total=challengePool.filter(c=>c.level===activeChallenge.level).length;$("sqlChallenge").querySelector("strong").textContent=activeChallenge.level+" challenge · "+seenQuestionIds[activeChallenge.level].size+" of "+total+" in this cycle";}
-  if(matchesExpected(result)){completedCount++;setFeedback("correct","✓ CORRECT — Your output matches this challenge.");}
+  const isCorrect=matchesExpected(result);
+  if(isCorrect){completedCount++;setFeedback("correct","✓ CORRECT — Your output matches this challenge.");}
   else{setFeedback("incorrect","✕ INCORRECT — Query executed, but the output does not match the expected answer. Your results are shown below.");}
+  if(activeChallenge)recordAttempt(activeChallenge,isCorrect);
   updateStats();
  }catch(e){setFeedback("error","⚠ QUERY FAILED — "+e.message);$("sqlResults").innerHTML="";}
 }
 function checkChallenge(){validateCurrentQuery();}
-function updateStats(){$("sqlStats").textContent=completedCount+" correct answers · "+runs+" queries run · SQLite";}
+function updateStats(){$("sqlStats").textContent=completedCount+" correct answers · "+runs+" queries run · SQLite";renderDashboard();}
 function renderResults(result){
  if(!result.length){$("sqlResults").innerHTML="<p class='sqlIntro'>Query executed successfully. No result set was returned.</p>";return;}
  $("sqlResults").innerHTML=result.map(r=>{const cols=r.columns||[];return "<table><thead><tr>"+cols.map(c=>"<th>"+escapeHtml(c)+"</th>").join("")+"</tr></thead><tbody>"+r.values.map(row=>"<tr>"+row.map(v=>"<td>"+escapeHtml(v)+"</td>").join("")+"</tr>").join("")+"</tbody></table>";}).join("");
@@ -184,7 +240,8 @@ function closeDrawerSafe(){const d=$("drawer"),s=$("drawerShade"),m=$("menuBtn")
 function init(){
  const panel=document.createElement("section");panel.id="sqlLab";panel.hidden=true;panel.innerHTML=`
  <div class="sqlTop"><h2>SQL Practice Lab</h2><button id="sqlClose">Close ✕</button></div>
- <p class="sqlIntro">Write and execute real SQLite queries in your browser. No server, account data or paid API is used by the SQL engine.</p>
+ <p class="sqlIntro">Write and execute real SQLite queries in your browser. Your learning progress is saved on this device and synced when signed in.</p>
+ <div class="sqlPanel sqlWide" id="sqlDashboard"><div class="sqlDashHead"><div><h3>Your learning progress</h3><p class="sqlIntro">A live view of your SQL practice.</p></div><button class="sqlAction" id="sqlDashRefresh">Refresh</button></div><div class="sqlMetricGrid" id="sqlMetricGrid"></div><div class="sqlLevelProgress" id="sqlLevelProgress"></div><div class="sqlDashBottom"><div><h4>Concepts to revisit</h4><div id="sqlWeakConcepts" class="sqlWeakList"></div></div><div><h4>Recent activity</h4><div id="sqlRecentActivity" class="sqlRecentList"></div></div></div></div>
  <div class="sqlGrid">
   <div class="sqlPanel"><h3>Choose difficulty</h3><select id="sqlLevel"><option>Easy</option><option>Intermediate</option><option>Hard</option></select><button class="sqlAction primary" id="sqlNext">Generate random question</button><div class="sqlPrompt" id="sqlChallenge"></div><div class="sqlStats" id="sqlStats">Choose a level to begin · SQLite</div></div>
   <div class="sqlPanel"><h3>Database tables</h3><p class="sqlIntro"><strong>Core SQL practice schema</strong></p><p class="sqlIntro">employees (employee_id, first_name, last_name, email, job_title, manager_id, hire_date, salary, commission_pct, department_id)</p><p class="sqlIntro">departments (department_id, department_name, manager_id, location_id)</p><p class="sqlIntro">locations (location_id, city, state_province, country)</p><p class="sqlIntro">Relationships: employees.department_id → departments.department_id → locations.location_id</p><button class="sqlAction" id="sqlReset">Reset sample database</button></div>
@@ -194,14 +251,14 @@ function init(){
  </div>`;
  document.body.append(panel);
  if(pendingOpen) panel.hidden=false;
- const level=$("sqlLevel");$("sqlNext").onclick=()=>nextChallenge(level.value);level.onchange=()=>nextChallenge(level.value);
+ const level=$("sqlLevel");$("sqlDashRefresh").onclick=renderDashboard;$("sqlNext").onclick=()=>nextChallenge(level.value);level.onchange=()=>nextChallenge(level.value);
  $("sqlClose").onclick=()=>panel.hidden=true;
  $("sqlRun").onclick=validateCurrentQuery;
  $("sqlClear").onclick=()=>{$("sqlEditor").value="";$("sqlStatus").textContent="Editor cleared.";};
  $("sqlSave").onclick=saveQuery;
  $("sqlReset").onclick=()=>{setupDb();questionDecks.Easy=[];questionDecks.Intermediate=[];questionDecks.Hard=[];nextChallenge(level.value);$("sqlStatus").textContent="Employee, department and location sample data reset.";};
  $("sqlSaved").onclick=e=>{const b=e.target.closest("[data-query]");if(!b)return;const key="sqlgram-queries-"+(localStorage.getItem("uid")||"guest");const items=JSON.parse(localStorage.getItem(key)||"[]");$("sqlEditor").value=items[Number(b.dataset.query)]?.sql||"";};
- setupDb();loadPracticeHistory().then(()=>nextChallenge("Easy"));renderSaved();
+ setupDb();loadPracticeHistory().then(()=>nextChallenge("Easy"));renderSaved();renderDashboard();
  window.__openSqlLab=openLab;
 }
 function loadEngine(){
