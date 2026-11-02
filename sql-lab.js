@@ -205,7 +205,7 @@ function validateCurrentQuery(){
   const result=db.exec(q);runs++;renderResults(result);
   if(!activeQuestionRecorded&&activeChallenge){recordQuestion(activeChallenge.level,activeChallenge.id);activeQuestionRecorded=true;const total=challengePool.filter(c=>c.level===activeChallenge.level).length;$("sqlChallenge").querySelector("strong").textContent=activeChallenge.level+" challenge · "+seenQuestionIds[activeChallenge.level].size+" of "+total+" in this cycle";}
   const isCorrect=matchesExpected(result);
-  if(isCorrect){completedCount++;setFeedback("correct","✓ CORRECT — Your output matches this challenge.");}
+  if(isCorrect){completedCount++;if(timerHandle)timedScore++;setFeedback("correct","✓ CORRECT — Your output matches this challenge.");}
   else{setFeedback("incorrect","✕ INCORRECT — Query executed, but the output does not match the expected answer. Your results are shown below.");}
   if(activeChallenge)recordAttempt(activeChallenge,isCorrect);
   updateStats();
@@ -239,7 +239,7 @@ function init(){
  </div>`;
  document.body.append(panel);
  if(pendingOpen) panel.hidden=false;
- const level=$("sqlLevel");$("sqlDashRefresh").onclick=renderDashboard;$("sqlNext").onclick=()=>nextChallenge(level.value);level.onchange=()=>nextChallenge(level.value);
+ const level=$("sqlLevel");renderConceptOptions();$("sqlDashRefresh").onclick=renderDashboard;$("sqlNext").onclick=()=>nextChallenge(level.value);level.onchange=()=>nextChallenge(level.value);$("sqlConcept").onchange=()=>nextChallenge(level.value);$("sqlHint").onclick=showHint;$("sqlTimerStart").onclick=()=>startSqlTimer(10,"Timed challenge");$("sqlInterview").onclick=()=>{level.value="Hard";$("sqlConcept").value="";nextChallenge("Hard");startSqlTimer(20,"Interview simulation");};
  $("sqlClose").onclick=()=>panel.hidden=true;
  $("sqlRun").onclick=validateCurrentQuery;
  $("sqlClear").onclick=()=>{$("sqlEditor").value="";$("sqlStatus").textContent="Editor cleared.";};
