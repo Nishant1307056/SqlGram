@@ -227,11 +227,12 @@ function saveQuery(){
 function loadCustomQuestions(){
  try{const a=JSON.parse(localStorage.getItem("sqlgram-custom-questions")||"[]");a.forEach(q=>{if(q&&!challengePool.some(c=>c.id===q.id))challengePool.push(q);});$("sqlCustomCount").textContent=a.length+" custom questions on this device.";}catch(e){}
 }
+function validateReferenceSql(sql){if(!/^\\s*(SELECT|WITH)\\b/i.test(sql))throw Error("Reference SQL must be a SELECT query or a read-only CTE.");const test=new SQL.Database(db.export());try{test.exec(sql);}finally{test.close();}}
 function addCustomQuestion(){
  const level=prompt("Difficulty: Easy, Intermediate or Hard","Intermediate");if(!["Easy","Intermediate","Hard"].includes(level))return;
  const promptText=prompt("Enter the learner question");if(!promptText)return;
  const solution=prompt("Enter reference SQL");if(!solution)return;
- try{db.exec(solution);}catch(e){alert("Invalid SQL: "+e.message);return;}
+ try{validateReferenceSql(solution);}catch(e){alert("Invalid SQL: "+e.message);return;}
  const q={id:"custom-"+Date.now(),level,prompt:promptText,solution};challengePool.push(q);
  const a=JSON.parse(localStorage.getItem("sqlgram-custom-questions")||"[]");a.push(q);localStorage.setItem("sqlgram-custom-questions",JSON.stringify(a));
  $("sqlCustomCount").textContent=a.length+" custom questions on this device.";renderConceptOptions();alert("Question added.");
@@ -244,7 +245,7 @@ function exportQuestionBank(){
 function importQuestionBank(file){
  const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(reader.result);if(!Array.isArray(data))throw Error("Expected JSON array");
  const saved=JSON.parse(localStorage.getItem("sqlgram-custom-questions")||"[]");let count=0;
- data.forEach((q,i)=>{if(!["Easy","Intermediate","Hard"].includes(q.level)||!q.prompt||!q.solution)return;db.exec(q.solution);if(challengePool.some(c=>c.prompt===q.prompt))return;const item={id:"import-"+Date.now()+"-"+i,level:q.level,prompt:String(q.prompt),solution:String(q.solution)};challengePool.push(item);saved.push(item);count++;});
+ data.forEach((q,i)=>{if(!["Easy","Intermediate","Hard"].includes(q.level)||!q.prompt||!q.solution)return;validateReferenceSql(q.solution);if(challengePool.some(c=>c.prompt===q.prompt))return;const item={id:"import-"+Date.now()+"-"+i,level:q.level,prompt:String(q.prompt),solution:String(q.solution)};challengePool.push(item);saved.push(item);count++;});
  localStorage.setItem("sqlgram-custom-questions",JSON.stringify(saved));$("sqlCustomCount").textContent=saved.length+" custom questions on this device.";renderConceptOptions();alert(count+" questions imported.");
  }catch(e){alert("Import failed: "+e.message);}};reader.readAsText(file);
 }
