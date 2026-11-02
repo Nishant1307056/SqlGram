@@ -71,6 +71,42 @@ function setupDb(){
 let lastGeneratedKey="";
 const questionDecks={Easy:[],Intermediate:[],Hard:[]};
 const lastQuestionByLevel={Easy:null,Intermediate:null,Hard:null};
+const seenQuestionIds={Easy:new Set(),Intermediate:new Set(),Hard:new Set()};
+let historyReady=false, historySaveQueue=Promise.resolve();
+function historyStorageKey(){return "sqlgram-practice-history-"+(localStorage.getItem("uid")||"guest");}
+function localHistory(){
+ try{return JSON.parse(localStorage.getItem(historyStorageKey())||"{}");}catch(e){return {};}
+}
+function persistLocalHistory(){
+ const data={Easy:[...seenQuestionIds.Easy],Intermediate:[...seenQuestionIds.Intermediate],Hard:[...seenQuestionIds.Hard]};
+ localStorage.setItem(historyStorageKey(),JSON.stringify(data));
+ return data;
+}
+async function loadPracticeHistory(){
+ const local=localHistory();
+ for(const level of ["Easy","Intermediate","Hard"]){
+  seenQuestionIds[level]=new Set(Array.isArray(local[level])?local[level]:[]);
+ }
+ try{
+  const cloud=window.__sqlGramPracticeHistory?await window.__sqlGramPracticeHistory.load():{};
+  for(const level of ["Easy","Intermediate","Hard"]){
+   if(Array.isArray(cloud[level])) for(const id of cloud[level]) seenQuestionIds[level].add(id);
+  }
+  historyReady=true;
+  const merged=persistLocalHistory();
+  if(window.__sqlGramPracticeHistory) await window.__sqlGramPracticeHistory.save(merged);
+ }catch(e){
+  console.warn("SqlGram cloud question history unavailable; using this device's history.",e);
+  historyReady=true;
+ }
+}
+function recordQuestion(level,id){
+ seenQuestionIds[level].add(id);
+ const data=persistLocalHistory();
+ if(window.__sqlGramPracticeHistory){
+  historySaveQueue=historySaveQueue.then(()=>window.__sqlGramPracticeHistory.save(data)).catch(e=>console.warn("Could not sync SQL question history to cloud.",e));
+ }
+}
 function shuffle(items){
  const a=[...items];
  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
@@ -81,19 +117,30 @@ function nextChallenge(level){
  if(!choices.length)return;
  let deck=questionDecks[level];
  if(!deck.length){
-  deck=shuffle(choices);
-  if(deck.length>1&&deck[deck.length-1].id===lastQuestionByLevel[level]){[deck[0],deck[deck.length-1]]=[deck[deck.length-1],deck[0]];}
+  let unseen=choices.filter(c=>!seenQuestionIds[level].has(c.id));
+  if(!unseen.length){
+   seenQuestionIds[level].clear();
+   unseen=choices;
+   persistLocalHistory();
+   if(window.__sqlGramPracticeHistory){
+    const reset={Easy:[...seenQuestionIds.Easy],Intermediate:[...seenQuestionIds.Intermediate],Hard:[...seenQuestionIds.Hard]};
+    historySaveQueue=historySaveQueue.then(()=>window.__sqlGramPracticeHistory.save(reset)).catch(e=>console.warn("Could not sync SQL question cycle.",e));
+   }
+  }
+  deck=shuffle(unseen);
   questionDecks[level]=deck;
  }
  const pick=questionDecks[level].pop();
  lastQuestionByLevel[level]=pick.id;
  activeChallenge=pick;
  expectedResult=db.exec(pick.solution);
- $("sqlChallenge").innerHTML="<strong>"+level+" challenge · "+(choices.length-questionDecks[level].length)+" of "+choices.length+" in this cycle</strong><p>"+escapeHtml(pick.prompt)+"</p>";
+ recordQuestion(level,pick.id);
+ const total=choices.length,seen=seenQuestionIds[level].size;
+ $("sqlChallenge").innerHTML="<strong>"+level+" challenge · "+seen+" of "+total+" in this cycle</strong><p>"+escapeHtml(pick.prompt)+"</p>";
  $("sqlEditor").value="";
  $("sqlResults").innerHTML="<p class='sqlIntro'>Run a query to inspect the result.</p>";
  $("sqlStatus").className="sqlStatus";
- $("sqlStatus").textContent="Fresh question selected. Questions will not repeat until this level's full question set has been practised.";
+ $("sqlStatus").textContent="Fresh question selected. Practised questions are remembered across devices when signed in.";
  updateStats();
 }
 function getDone(){const k="sqlgram-practice-"+(localStorage.getItem("uid")||"guest");return new Set(JSON.parse(localStorage.getItem(k)||"[]"));}
@@ -153,7 +200,7 @@ function init(){
  $("sqlSave").onclick=saveQuery;
  $("sqlReset").onclick=()=>{setupDb();questionDecks.Easy=[];questionDecks.Intermediate=[];questionDecks.Hard=[];nextChallenge(level.value);$("sqlStatus").textContent="Employee, department and location sample data reset.";};
  $("sqlSaved").onclick=e=>{const b=e.target.closest("[data-query]");if(!b)return;const key="sqlgram-queries-"+(localStorage.getItem("uid")||"guest");const items=JSON.parse(localStorage.getItem(key)||"[]");$("sqlEditor").value=items[Number(b.dataset.query)]?.sql||"";};
- setupDb();nextChallenge("Easy");renderSaved();
+ setupDb();loadPracticeHistory().then(()=>nextChallenge("Easy"));renderSaved();
  window.__openSqlLab=openLab;
 }
 function loadEngine(){
