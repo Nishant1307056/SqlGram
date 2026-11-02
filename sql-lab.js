@@ -75,6 +75,14 @@ const seenQuestionIds={Easy:new Set(),Intermediate:new Set(),Hard:new Set()};
 let historyReady=false, historySaveQueue=Promise.resolve(), activeQuestionRecorded=false;
 const emptyMetrics=()=>({attempts:0,correct:0,incorrect:0,uniqueQuestions:[],byLevel:{Easy:{attempts:0,correct:0},Intermediate:{attempts:0,correct:0},Hard:{attempts:0,correct:0}},byConcept:{},recent:[]});
 let practiceMetrics=emptyMetrics();
+let hintStep=0,timerHandle=null,timerSeconds=0,timerMode="",timedScore=0;
+function getConcept(c){return conceptByQuestion[c.id]||"Other";}
+function renderConceptOptions(){const sel=$("sqlConcept"),old=sel.value,names=[...new Set(challengePool.map(getConcept))].sort();sel.innerHTML='<option value="">All concepts</option>'+names.map(n=>'<option>'+escapeHtml(n)+'</option>').join("");if(names.includes(old))sel.value=old;}
+function getPracticeChoices(level){const c=$("sqlConcept").value;return challengePool.filter(q=>q.level===level&&(!c||getConcept(q)===c));}
+function showHint(){if(!activeChallenge)return;const hints=["Identify the output columns and the tables needed.","Map the requested result to SQL clauses: WHERE, JOIN, GROUP BY, HAVING or window functions.","Build the query in small steps and compare the result shape with the prompt."];hintStep=Math.min(hintStep+1,3);$("sqlHintBox").hidden=false;$("sqlHintBox").textContent="Hint "+hintStep+" of 3: "+hints[hintStep-1];}
+function stopSqlTimer(){if(timerHandle){clearInterval(timerHandle);timerHandle=null;}}
+function startSqlTimer(minutes,mode){stopSqlTimer();timerMode=mode;timerSeconds=minutes*60;timedScore=0;const draw=()=>$("sqlTimer").textContent=mode+" · "+String(Math.floor(timerSeconds/60)).padStart(2,"0")+":"+String(timerSeconds%60).padStart(2,"0");draw();timerHandle=setInterval(()=>{timerSeconds--;draw();if(timerSeconds<=0){stopSqlTimer();$("sqlTimer").textContent="Time is up · "+timedScore+" correct";setFeedback("error",mode+" finished. Score: "+timedScore);}},1000);}
+
 const conceptByQuestion={
  e1:"Filtering & sorting",e2:"Filtering & sorting",e3:"DISTINCT",e4:"Date filtering",e5:"GROUP BY & aggregation",
  e6:"NULL handling",e7:"Pattern matching",e8:"String operations",e9:"Aggregate functions",e10:"Sorting",e11:"Date filtering",e12:"DISTINCT",e13:"NULL handling",e14:"DISTINCT",e15:"LIMIT & sorting",e16:"Filtering",e17:"GROUP BY & aggregation",
