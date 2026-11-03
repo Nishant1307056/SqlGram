@@ -1,13 +1,18 @@
 {
-  "name": "Learning SQL from Scratch",
-  "short_name": "Learn SQL",
+  "name": "SqlGram — Learn SQL & Databases",
+  "short_name": "SqlGram",
+  "description": "Learn databases from fundamentals to advanced SQL, one concept at a time.",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
-  "background_color": "#f1f2f7",
-  "theme_color": "#3b6cf6",
+  "background_color": "#071633",
+  "theme_color": "#102b65",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "brand-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
   ]
 }
