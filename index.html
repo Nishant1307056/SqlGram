@@ -368,7 +368,7 @@ ORDER BY rn;`,"occupations~name|occupation;Ann|Doctor;Raj|Doctor;Eli|Professor;Z
 -- VARCHAR(n), TEXT   text
 -- DATE, TIMESTAMP    dates and times
 -- BOOLEAN            true or false
--- JSON               nested data`,"","The type decides what a column can store and what you can do with it. Use DECIMAL for money, never FLOAT, because FLOAT rounds. Type names vary slightly between databases."],
+-- JSON               nested data`,"","The type decides what a column can store and what you can do with it. Use DECIMAL or NUMERIC for exact monetary values. FLOAT and REAL are approximate numeric types, so arithmetic can produce small representation and rounding differences. Type names vary slightly between databases."],
 ["Foundations","Beginner","Primary and foreign keys","How tables connect",`CREATE TABLE orders (
   id INT PRIMARY KEY,
   customer_id INT,
@@ -428,13 +428,13 @@ FROM events;`,"","Modern databases store JSON in a column and query inside it. T
 );`,"","PRIMARY KEY, UNIQUE, NOT NULL, CHECK, DEFAULT and FOREIGN KEY keep data valid no matter which app writes it. Enforcing rules in the database is safer than trusting every application."],
 ["Engineering","Intermediate","ALTER, DROP, TRUNCATE","Change structure",`ALTER TABLE users ADD COLUMN city VARCHAR(30);
 TRUNCATE TABLE logs;
-DROP TABLE old_logs;`,"","ALTER changes a table’s structure. TRUNCATE removes every row quickly and keeps the table. DELETE removes chosen rows and can usually be rolled back. DROP deletes the table itself, so double-check the name."],
+DROP TABLE old_logs;`,"","ALTER changes a table’s structure. TRUNCATE removes all rows while keeping the table definition, but its locking, speed and transaction behaviour vary by DBMS. DELETE can remove selected rows and is often transactional, but rollback behaviour depends on the engine and transaction context. DROP removes the table object itself."],
 ["Engineering","Intermediate","Views","Save a query as a virtual table",`CREATE VIEW active_users AS
 SELECT id, email
 FROM users
 WHERE status = 'active';
 
-SELECT * FROM active_users;`,"","A view stores the query, not the data, so it is always current. Use it to simplify joins and to expose only some columns. A materialized view stores the results and must be refreshed, which makes heavy aggregates fast."],
+SELECT * FROM active_users;`,"","A regular view stores a query definition rather than a separate result copy; each query reads underlying data as visible under its transaction's isolation rules. Use views to simplify joins or expose selected columns. A materialized view stores results separately and needs refreshing according to the DBMS."],
 ["Engineering","Advanced","Procedures and functions","Logic stored in the database",`-- MySQL style
 CREATE PROCEDURE deactivate_user(IN uid INT)
 BEGIN
@@ -459,7 +459,7 @@ COMMIT;`,"","BEGIN starts a transaction, COMMIT makes its changes permanent, and
 -- 2NF  every column depends on the whole key
 -- 3NF  columns depend only on the key`,"","Normalizing splits data into related tables so a change happens in one place, which prevents update anomalies. Denormalizing duplicates data on purpose to make reads faster, which is common in analytics."],
 ["Engineering","Advanced","Index types","Choose the right index",`CREATE INDEX idx_city_age
-  ON customers (city, age);`,"","B-tree is the default and handles equality and ranges. Hash indexes handle equality only. A composite index follows its leftmost columns: it helps city or city+age, not age alone. A covering index holds every column a query needs. A clustered index is the physical row order (one per table); non-clustered indexes are separate lookups. Indexes speed reads but slow writes and use space."],
+  ON customers (city, age);`,"","B-tree indexes commonly support equality and range lookups; hash-index support and behaviour are DBMS-specific. A composite index is generally most useful when predicates constrain its leading columns, so (city, age) can support city and city-plus-age searches but may not help an age-only search. A covering index contains the columns needed by a query. Clustered-index meaning varies by engine: in some row stores it defines the table's primary storage order, while other systems use different clustering concepts. Indexes consume space and add write cost; measure their benefit."],
 ["Engineering","Advanced","Clustering","Keep related rows together",`-- Snowflake
 ALTER TABLE orders
   CLUSTER BY (order_date);`,"","In row stores, a clustered index decides the physical order of rows. In warehouses (Snowflake, BigQuery), clustering sorts data into chunks by chosen columns so queries filtering on them skip most chunks. Pick columns you filter on often."],
@@ -468,14 +468,14 @@ CREATE TABLE sales (
   id INT,
   sold_on DATE,
   amount DECIMAL(10,2)
-) PARTITION BY RANGE (sold_on);`,"","Partitioning splits one logical table into pieces by range (dates), list (regions) or hash. A query for one month reads only that partition, called partition pruning, and old data can be dropped by removing a partition."],
+) PARTITION BY RANGE (sold_on);`,"","Partitioning splits one logical table into pieces by range, list or hash. When a query predicate matches the partition key and the optimizer can prove which partitions are needed, partition pruning can skip irrelevant partitions. Retention can sometimes be managed by dropping or detaching old partitions; exact operations vary by DBMS."],
 ["Engineering","Advanced","Sharding and replication","Scale beyond one server","","","Sharding spreads rows across separate servers by a key such as user id, so each holds a slice. Replication copies the same data to other servers: replicas serve reads and take over if the primary fails. Partitioning stays inside one database; sharding spans many."],
 ["Engineering","Advanced","Execution plans","Make slow queries fast",`-- Slow: function on the column
 WHERE YEAR(order_date) = 2024
 
 -- Fast: range on the raw column
 WHERE order_date >= '2024-01-01'
-  AND order_date <  '2025-01-01'`,"","Run EXPLAIN and look for full table scans. Select only the columns you need, filter early, join on indexed keys, and keep filter columns bare so indexes apply. Databases join with nested loops, hash joins or merge joins and choose using table statistics."],
+  AND order_date <  '2025-01-01'`,"","Start with EXPLAIN (and an actual execution plan when available). Compare estimated and actual row counts, identify expensive scans, sorts, spills and joins, then test one change at a time. Selecting needed columns and writing sargable predicates can help, but a scan may be optimal and not every join key needs an index. Join algorithms and optimizer choices depend on data, statistics and the engine."],
 ["Engineering","Advanced","Data warehouse design","OLTP, OLAP and star schema",`-- fact_sales(date_key, product_key, amount)
 -- dim_date, dim_product, dim_customer`,"","OLTP systems run the app with many small writes. OLAP warehouses answer big analytical reads. A star schema puts measurable events in a fact table surrounded by descriptive dimension tables. Slowly changing dimension type 2 keeps history by adding a new row with start and end dates."],
 ["Engineering","Intermediate","Security","Permissions and injection",`GRANT SELECT ON orders TO analyst;
@@ -1344,7 +1344,7 @@ function refreshProfile() {
 function closeDrawer(){$("drawer").classList.remove("open");$("drawer").setAttribute("aria-hidden","true");$("drawerShade").hidden=true;$("menuBtn").setAttribute("aria-expanded","false");}
 $("menuBtn").addEventListener("click",()=>{refreshProfile();$("drawer").classList.add("open");$("drawer").setAttribute("aria-hidden","false");$("drawerShade").hidden=false;$("menuBtn").setAttribute("aria-expanded","true");});
 $("closeDrawer").addEventListener("click",closeDrawer);$("drawerShade").addEventListener("click",closeDrawer);
-document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",()=>{const a=b.dataset.menu;closeDrawer();if(a==="profile"){refreshProfile();$("profilePanel").hidden=false;}else if(a==="curriculum"){if(window.__openCurriculum)window.__openCurriculum();else import("./curriculum.js?v=1").then(()=>window.__openCurriculum?.()).catch(e=>{console.error(e);alert("Learning path could not load.");});}else if(a==="settings"){$("settingsPanel").hidden=false;}else if(a==="developer"){$("developerPanel").hidden=false;}else if(a==="practice"){if(window.__openSqlLab){window.__openSqlLab();}else{import("./sql-lab.js?v=22").then(()=>window.__openSqlLab?.()).catch(e=>{console.error("SQL Lab load failed",e);alert("SQL Practice Lab could not load. Please check your internet connection and try again.");});}}else window.__setSqlGramFilter(a);}));
+document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",()=>{const a=b.dataset.menu;closeDrawer();if(a==="profile"){refreshProfile();$("profilePanel").hidden=false;}else if(a==="curriculum"){if(window.__openCurriculum)window.__openCurriculum();else import("./curriculum.js?v=1").then(()=>window.__openCurriculum?.()).catch(e=>{console.error(e);alert("Learning path could not load.");});}else if(a==="settings"){$("settingsPanel").hidden=false;}else if(a==="developer"){$("developerPanel").hidden=false;}else if(a==="practice"){if(window.__openSqlLab){window.__openSqlLab();}else{import("./sql-lab.js?v=23").then(()=>window.__openSqlLab?.()).catch(e=>{console.error("SQL Lab load failed",e);alert("SQL Practice Lab could not load. Please check your internet connection and try again.");});}}else window.__setSqlGramFilter(a);}));
 $("closeSettings").addEventListener("click",()=>$("settingsPanel").hidden=true);
 $("closeDeveloper").addEventListener("click",()=>$("developerPanel").hidden=true);
 const savedTheme=localStorage.getItem("sqlgram-theme")||"system";$("themeChoice").value=savedTheme;
@@ -1467,5 +1467,5 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js?v=9", 
 </script>
 <script src="curriculum.js?v=2" defer></script>
 <script src="curriculum-lessons.js?v=1" defer></script>
-<script type="module" src="sql-lab.js?v=19"></script>
+<script type="module" src="sql-lab.js?v=20"></script>
 </body></html>
