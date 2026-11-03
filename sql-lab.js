@@ -60,6 +60,7 @@ let db=null, active=0, runs=0, pendingOpen=false;
 function escapeHtml(v){return String(v??"NULL").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function setupDb(){
  db=new window.SQL.Database();
+ db.run("PRAGMA foreign_keys = ON;");
  // Classic SQL-learning schema: employees -> departments -> locations.
  db.run("CREATE TABLE locations (location_id INTEGER PRIMARY KEY, city TEXT NOT NULL, state_province TEXT, country TEXT);");
  db.run("INSERT INTO locations VALUES (1000,'New York','New York','USA'),(1100,'Dallas','Texas','USA'),(1200,'Chicago','Illinois','USA'),(1300,'Seattle','Washington','USA'),(1400,'London','England','UK'),(1500,'Mumbai','Maharashtra','India');");
@@ -261,7 +262,7 @@ function closeDrawerSafe(){const d=$("drawer"),s=$("drawerShade"),m=$("menuBtn")
 function init(){
  const panel=document.createElement("section");panel.id="sqlLab";panel.hidden=true;panel.innerHTML=`
  <div class="sqlTop"><h2>SQL Practice Lab</h2><button id="sqlClose">Close ✕</button></div>
- <p class="sqlIntro">Write and execute real SQLite queries in your browser. Your learning progress is saved on this device and synced when signed in.</p>
+ <p class="sqlIntro">Write and execute real SQLite queries in your browser. The lab uses employees, departments and locations; some feed lessons use illustrative tables, so adapt their table names when practising. Your progress syncs when signed in.</p>
  <div class="sqlPanel sqlWide" id="sqlDashboard"><div class="sqlDashHead"><div><h3>Your learning progress</h3><p class="sqlIntro">A live view of your SQL practice.</p></div><button class="sqlAction" id="sqlDashRefresh">Refresh</button></div><div class="sqlMetricGrid" id="sqlMetricGrid"></div><div class="sqlLevelProgress" id="sqlLevelProgress"></div><div class="sqlDashBottom"><div><h4>Concepts to revisit</h4><div id="sqlWeakConcepts" class="sqlWeakList"></div></div><div><h4>Recent activity</h4><div id="sqlRecentActivity" class="sqlRecentList"></div></div></div></div>
  <div class="sqlGrid">
   <div class="sqlPanel"><h3>Practice controls</h3><label>Difficulty</label><select id="sqlLevel"><option>Easy</option><option>Intermediate</option><option>Hard</option></select><label>SQL concept</label><select id="sqlConcept"><option value="">All concepts</option></select><button class="sqlAction primary" id="sqlNext">Generate next question</button><div class="sqlPrompt" id="sqlChallenge"></div><div class="sqlToolbar"><button class="sqlAction" id="sqlHint">Get a hint</button><button class="sqlAction" id="sqlTimerStart">10-minute challenge</button><button class="sqlAction" id="sqlInterview">Interview mode</button></div><div id="sqlHintBox" class="sqlHintBox" hidden></div><div id="sqlTimer" class="sqlTimer">Timer not started</div><div class="sqlStats" id="sqlStats">Choose a level to begin · SQLite</div></div>
